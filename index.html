@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>积存金收益计算器（独立手续费）</title>
+    <title>积存金持仓管理系统</title>
     <style>
         * {
             margin: 0;
@@ -75,118 +75,7 @@
             background-color: #219653;
         }
 
-        .result-box {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            display: none;
-        }
-
-        .result-title {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 20px;
-            text-align: center;
-        }
-
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-
-        .profit-positive {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        .profit-negative {
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        .tip {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        .calc-type {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-        
-        .calc-type label {
-            margin: 0;
-            cursor: pointer;
-        }
-        
-        .input-group {
-            display: none;
-        }
-        
-        .input-group.active {
-            display: block;
-        }
-
-        .safe-price {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #e8f5e9;
-            border-left: 4px solid #27ae60;
-            border-radius: 8px;
-            font-size: 15px;
-            color: #2e7d32;
-            font-weight: 500;
-        }
-
-        .tab-nav {
-            display: flex;
-            gap: 0;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            background: none;
-            font-size: 16px;
-            color: #7f8c8d;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            transition: all 0.3s;
-        }
-
-        .tab-btn:hover {
-            color: #27ae60;
-        }
-
-        .tab-btn.active {
-            color: #27ae60;
-            border-bottom-color: #27ae60;
-            font-weight: 600;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* 持仓管理Tab样式 */
+        /* 持仓管理样式 */
         .stats-card {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
             color: white;
@@ -393,277 +282,144 @@
 </head>
 <body>
     <div class="calculator-box">
-        <h2 class="title">💰 积存金收益计算器</h2>
+        <h2 class="title">💰 积存金持仓管理系统</h2>
 
-        <!-- Tab导航 -->
-        <div class="tab-nav">
-            <button class="tab-btn active" data-tab="single">单次计算</button>
-            <button class="tab-btn" data-tab="portfolio">持仓管理</button>
-        </div>
-
-        <!-- 单次计算Tab内容 -->
-        <div class="tab-content active" id="singleTab">
-        <!-- 计算方式选择 -->
-        <div class="calc-type">
-            <label>
-                <input type="radio" name="calcType" value="weight" checked> 按克数计算
-            </label>
-            <label>
-                <input type="radio" name="calcType" value="amount"> 按购买总金额计算
-            </label>
-        </div>
-
-        <!-- 按克数计算的输入项 -->
-        <div class="input-group active" id="weightGroup">
-            <div class="form-group">
-                <label>买入价格（元/克）</label>
-                <input type="number" id="buyPrice" placeholder="请输入买入单价" step="0.01">
+        <!-- 持仓统计卡片 -->
+        <div class="stats-card" id="statsCard">
+            <h3 class="card-title">📊 持仓统计</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">总持仓克数</span>
+                    <span class="stat-value" id="statTotalWeight">0.00 克</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">总投入金额</span>
+                    <span class="stat-value" id="statTotalInvestment">0.00 元</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">加权平均成本</span>
+                    <span class="stat-value" id="statAvgCost">0.00 元/克</span>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label>卖出价格（元/克）</label>
-                <input type="number" id="sellPrice" placeholder="请输入卖出单价" step="0.01">
-            </div>
-
-            <div class="form-group">
-                <label>买入克数（克）</label>
-                <input type="number" id="weight" placeholder="请输入持有克数" step="0.01">
-            </div>
-        </div>
-        
-        <!-- 按总金额计算的输入项 -->
-        <div class="input-group" id="amountGroup">
-            <div class="form-group">
-                <label>买入价格（元/克）</label>
-                <input type="number" id="buyPrice2" placeholder="请输入买入单价" step="0.01">
-            </div>
-
-            <div class="form-group">
-                <label>卖出价格（元/克）</label>
-                <input type="number" id="sellPrice2" placeholder="请输入卖出单价" step="0.01">
-            </div>
-
-            <div class="form-group">
-                <label>购买总金额（元）</label>
-                <input type="number" id="buyAmount" placeholder="请输入购买总金额" step="0.01">
-                <div class="tip">注：购买总金额为扣除手续费前的金额</div>
+            <div class="break-even-box" id="breakEvenBox">
+                ✅ 保本卖出价：<span id="breakEvenPrice">0.00</span> 元/克
             </div>
         </div>
 
-        <!-- 手续费设置 -->
-        <div class="form-group">
-            <label>买入手续费率（%）</label>
-            <input type="number" id="buyFeeRate" placeholder="默认0.0%" value="0.0" step="0.1">
+        <!-- 新增买入表单 -->
+        <div class="form-card">
+            <h3 class="card-title">📥 新增买入</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>买入价格（元/克）</label>
+                    <input type="number" id="buyPriceInput" placeholder="请输入买入单价" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>买入克数（克）</label>
+                    <input type="number" id="buyWeightInput" placeholder="请输入买入克数" step="0.01">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>买入手续费率（%）</label>
+                    <input type="number" id="buyFeeRateInput" placeholder="默认0.1%" value="0.1" step="0.01">
+                </div>
+                <div class="form-group preview-group">
+                    <label>预计买入金额</label>
+                    <div class="preview-value" id="previewBuyAmount">0.00 元</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group preview-group">
+                    <label>预计手续费</label>
+                    <div class="preview-value" id="previewBuyFee">0.00 元</div>
+                </div>
+                <div class="form-group">
+                    <button class="btn-calc" onclick="handleAddBuy()">确认买入</button>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>卖出手续费率（%）</label>
-            <input type="number" id="sellFeeRate" placeholder="默认0.4%" value="0.4" step="0.1">
+        <!-- 卖出操作表单 -->
+        <div class="form-card">
+            <h3 class="card-title">💰 卖出操作</h3>
+            <div class="sell-type-group">
+                <label class="radio-label">
+                    <input type="radio" name="sellType" value="weight" checked> 按克数
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="sellType" value="amount"> 按金额
+                </label>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>卖出价格（元/克）</label>
+                    <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label id="sellQuantityLabel">卖出克数（克）</label>
+                    <input type="number" id="sellQuantityInput" placeholder="请输入卖出数量" step="0.01">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>卖出手续费率（%）</label>
+                    <input type="number" id="sellFeeRateInput" placeholder="默认0.1%" value="0.1" step="0.01">
+                </div>
+                <div class="form-group preview-group">
+                    <label>预计卖出金额</label>
+                    <div class="preview-value" id="previewSellAmount">0.00 元</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group preview-group">
+                    <label>预计手续费</label>
+                    <div class="preview-value" id="previewSellFee">0.00 元</div>
+                </div>
+                <div class="form-group preview-group">
+                    <label>预计净收益</label>
+                    <div class="preview-value" id="previewNetProfit">0.00 元</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <button class="btn-calc btn-sell" onclick="handleSell()">确认卖出</button>
+                </div>
+            </div>
         </div>
 
-        <button class="btn-calc" onclick="calcProfit()">立即计算收益</button>
-
-        <div class="result-box" id="result">
-            <h3 class="result-title">📊 计算结果</h3>
-            <div class="result-item">
-                <span>买入总金额：</span>
-                <span id="buyTotal">0.00 元</span>
+        <!-- 买入记录列表 -->
+        <div class="record-card">
+            <div class="record-header">
+                <h3 class="card-title">📋 买入记录</h3>
+                <button class="btn-clear" onclick="handleClearAll()">清空全部</button>
             </div>
-            <div class="result-item">
-                <span>实际持有克数：</span>
-                <span id="holdWeight">0.00 克</span>
+            <div class="table-container">
+                <table class="record-table" id="buyRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>单价</th>
+                            <th>克数</th>
+                            <th>金额</th>
+                            <th>手续费</th>
+                            <th>剩余</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="buyRecordsBody">
+                        <!-- 动态生成 -->
+                    </tbody>
+                    <tfoot id="buyRecordsFoot">
+                        <!-- 动态生成汇总 -->
+                    </tfoot>
+                </table>
             </div>
-            <div class="result-item">
-                <span>卖出总金额：</span>
-                <span id="sellTotal">0.00 元</span>
-            </div>
-            <div class="result-item">
-                <span>买入手续费：</span>
-                <span id="buyFee">0.00 元</span>
-            </div>
-            <div class="result-item">
-                <span>卖出手续费：</span>
-                <span id="sellFee">0.00 元</span>
-            </div>
-            <div class="result-item">
-                <span>总手续费：</span>
-                <span id="totalFee">0.00 元</span>
-            </div>
-            <div class="result-item">
-                <span>持仓价差毛利：</span>
-                <span id="grossProfit">0.00 元</span>
-            </div>
-            <div class="result-item">
-                <span><b>最终净收益：</b></span>
-                <span id="netProfit" class="profit-positive">0.00 元</span>
-            </div>
-
-            <!-- 新增：保本卖出价提示 -->
-            <div class="safe-price" id="safePriceTip"></div>
-        </div>
-        </div>
-
-        <!-- 持仓管理Tab内容 -->
-        <div class="tab-content" id="portfolioTab">
-            <!-- 持仓统计卡片 -->
-            <div class="stats-card" id="statsCard">
-                <h3 class="card-title">📊 持仓统计</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">总持仓克数</span>
-                        <span class="stat-value" id="statTotalWeight">0.00 克</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">总投入金额</span>
-                        <span class="stat-value" id="statTotalInvestment">0.00 元</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">加权平均成本</span>
-                        <span class="stat-value" id="statAvgCost">0.00 元/克</span>
-                    </div>
-                </div>
-                <div class="break-even-box" id="breakEvenBox">
-                    ✅ 保本卖出价：<span id="breakEvenPrice">0.00</span> 元/克
-                </div>
-            </div>
-
-            <!-- 新增买入表单 -->
-            <div class="form-card">
-                <h3 class="card-title">📥 新增买入</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>买入价格（元/克）</label>
-                        <input type="number" id="buyPriceInput" placeholder="请输入买入单价" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>买入克数（克）</label>
-                        <input type="number" id="buyWeightInput" placeholder="请输入买入克数" step="0.01">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>买入手续费率（%）</label>
-                        <input type="number" id="buyFeeRateInput" placeholder="默认0.1%" value="0.1" step="0.01">
-                    </div>
-                    <div class="form-group preview-group">
-                        <label>预计买入金额</label>
-                        <div class="preview-value" id="previewBuyAmount">0.00 元</div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group preview-group">
-                        <label>预计手续费</label>
-                        <div class="preview-value" id="previewBuyFee">0.00 元</div>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn-calc" onclick="handleAddBuy()">确认买入</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 卖出操作表单 -->
-            <div class="form-card">
-                <h3 class="card-title">💰 卖出操作</h3>
-                <div class="sell-type-group">
-                    <label class="radio-label">
-                        <input type="radio" name="sellType" value="weight" checked> 按克数
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="sellType" value="amount"> 按金额
-                    </label>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>卖出价格（元/克）</label>
-                        <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label id="sellQuantityLabel">卖出克数（克）</label>
-                        <input type="number" id="sellQuantityInput" placeholder="请输入卖出数量" step="0.01">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>卖出手续费率（%）</label>
-                        <input type="number" id="sellFeeRateInput" placeholder="默认0.1%" value="0.1" step="0.01">
-                    </div>
-                    <div class="form-group preview-group">
-                        <label>预计卖出金额</label>
-                        <div class="preview-value" id="previewSellAmount">0.00 元</div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group preview-group">
-                        <label>预计手续费</label>
-                        <div class="preview-value" id="previewSellFee">0.00 元</div>
-                    </div>
-                    <div class="form-group preview-group">
-                        <label>预计净收益</label>
-                        <div class="preview-value" id="previewNetProfit">0.00 元</div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <button class="btn-calc btn-sell" onclick="handleSell()">确认卖出</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 买入记录列表 -->
-            <div class="record-card">
-                <div class="record-header">
-                    <h3 class="card-title">📋 买入记录</h3>
-                    <button class="btn-clear" onclick="handleClearAll()">清空全部</button>
-                </div>
-                <div class="table-container">
-                    <table class="record-table" id="buyRecordsTable">
-                        <thead>
-                            <tr>
-                                <th>时间</th>
-                                <th>单价</th>
-                                <th>克数</th>
-                                <th>金额</th>
-                                <th>手续费</th>
-                                <th>剩余</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="buyRecordsBody">
-                            <!-- 动态生成 -->
-                        </tbody>
-                        <tfoot id="buyRecordsFoot">
-                            <!-- 动态生成汇总 -->
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="empty-tip" id="emptyTip">暂无买入记录</div>
-            </div>
+            <div class="empty-tip" id="emptyTip">暂无买入记录</div>
         </div>
     </div>
 
     <script>
-        // Tab切换功能
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tabId = this.dataset.tab;
-
-                // 切换按钮状态
-                tabBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-
-                // 切换内容显示
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === tabId + 'Tab') {
-                        content.classList.add('active');
-                    }
-                });
-            });
-        });
-
         // ==================== 数据存储模块 ====================
         const STORAGE_KEY = 'goldTradeData';
 
@@ -925,101 +681,6 @@
             }
         }
 
-        // 切换计算方式
-        const calcTypeRadios = document.querySelectorAll('input[name="calcType"]');
-        const weightGroup = document.getElementById('weightGroup');
-        const amountGroup = document.getElementById('amountGroup');
-        
-        calcTypeRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value === 'weight') {
-                    weightGroup.classList.add('active');
-                    amountGroup.classList.remove('active');
-                } else {
-                    weightGroup.classList.remove('active');
-                    amountGroup.classList.add('active');
-                }
-            });
-        });
-
-        function calcProfit() {
-            // 获取手续费率
-            const buyFeeRate = parseFloat(document.getElementById('buyFeeRate').value) || 0;
-            const sellFeeRate = parseFloat(document.getElementById('sellFeeRate').value) || 0;
-            
-            // 获取计算方式
-            const calcType = document.querySelector('input[name="calcType"]:checked').value;
-            
-            let buyPrice, sellPrice, weight, buyTotal, buyAmount;
-            
-            // 按克数计算
-            if (calcType === 'weight') {
-                buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
-                sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
-                weight = parseFloat(document.getElementById('weight').value) || 0;
-
-                // 校验
-                if (buyPrice <= 0 || sellPrice <= 0 || weight <= 0) {
-                    alert('请输入有效的价格和克数！');
-                    return;
-                }
-                
-                // 计算买入总金额（扣除手续费前）
-                buyTotal = buyPrice * weight;
-            } 
-            // 按购买总金额计算
-            else {
-                buyPrice = parseFloat(document.getElementById('buyPrice2').value) || 0;
-                sellPrice = parseFloat(document.getElementById('sellPrice2').value) || 0;
-                buyAmount = parseFloat(document.getElementById('buyAmount').value) || 0;
-
-                // 校验
-                if (buyPrice <= 0 || sellPrice <= 0 || buyAmount <= 0) {
-                    alert('请输入有效的价格和购买总金额！');
-                    return;
-                }
-                
-                // 计算实际持有克数
-                const buyFee = buyAmount * (buyFeeRate / 100);
-                const actualBuyAmount = buyAmount - buyFee;
-                weight = actualBuyAmount / buyPrice;
-                buyTotal = buyAmount;
-            }
-
-            // 计算收益
-            const sellTotal = sellPrice * weight;
-            const buyFee = buyTotal * (buyFeeRate / 100);
-            const sellFee = sellTotal * (sellFeeRate / 100);
-            const totalFee = buyFee + sellFee;
-            const grossProfit = sellTotal - buyTotal;
-            const netProfit = grossProfit - totalFee;
-
-            // —— 新增：计算【保本卖出价】
-            const breakEvenSellPrice = (buyPrice * (1 + buyFeeRate/100)) / (1 - sellFeeRate/100);
-            document.getElementById('safePriceTip').innerText = 
-                `✅ 保本提示：卖出价 ≥ ${breakEvenSellPrice.toFixed(2)} 元/克 才能获得正收益`;
-
-            // 显示结果
-            document.getElementById('buyTotal').innerText = buyTotal.toFixed(2) + ' 元';
-            document.getElementById('holdWeight').innerText = weight.toFixed(4) + ' 克';
-            document.getElementById('sellTotal').innerText = sellTotal.toFixed(2) + ' 元';
-            document.getElementById('buyFee').innerText = buyFee.toFixed(2) + ' 元';
-            document.getElementById('sellFee').innerText = sellFee.toFixed(2) + ' 元';
-            document.getElementById('totalFee').innerText = totalFee.toFixed(2) + ' 元';
-            document.getElementById('grossProfit').innerText = grossProfit.toFixed(2) + ' 元';
-            
-            // 净收益颜色
-            const netProfitEl = document.getElementById('netProfit');
-            netProfitEl.innerText = netProfit.toFixed(2) + ' 元';
-            if (netProfit >= 0) {
-                netProfitEl.className = 'profit-positive';
-            } else {
-                netProfitEl.className = 'profit-negative';
-            }
-
-            document.getElementById('result').style.display = 'block';
-        }
-
         // ==================== 卖出功能 ====================
         const sellTypeRadios = document.querySelectorAll('input[name="sellType"]');
         const sellQuantityLabel = document.getElementById('sellQuantityLabel');
@@ -1116,15 +777,6 @@
         // 页面加载时刷新持仓显示
         document.addEventListener('DOMContentLoaded', function() {
             refreshPortfolio();
-        });
-
-        // Tab切换时也刷新数据
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (this.dataset.tab === 'portfolio') {
-                    refreshPortfolio();
-                }
-            });
         });
     </script>
 </body>
