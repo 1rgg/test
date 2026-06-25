@@ -270,12 +270,198 @@
             color: #27ae60;
         }
 
+        /* 卖出收益记录样式 */
+        .profit-summary-card {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        .profit-summary-card .card-title {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .profit-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .profit-summary-item {
+            text-align: center;
+        }
+
+        .profit-summary-label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .profit-summary-value {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .profit-summary-value.profit {
+            color: #2ecc71;
+        }
+
+        .profit-summary-value.loss {
+            color: #e74c3c;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .date-input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .date-input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .sort-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sort-select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .profit-amount {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .loss-amount {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .profit-rate {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .loss-rate {
+            background: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover:not(.disabled) {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .page-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .page-btn.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .page-info {
+            color: #7f8c8d;
+            font-size: 13px;
+            padding: 8px;
+        }
+
         @media (max-width: 500px) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
             .form-row {
                 grid-template-columns: 1fr;
+            }
+            .profit-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .filter-card {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -416,6 +602,87 @@
                 </table>
             </div>
             <div class="empty-tip" id="emptyTip">暂无买入记录</div>
+        </div>
+
+        <!-- 卖出收益记录模块 -->
+        <div class="profit-summary-card" id="profitSummaryCard">
+            <h3 class="card-title">📈 卖出收益汇总</h3>
+            <div class="profit-summary-grid">
+                <div class="profit-summary-item">
+                    <span class="profit-summary-label">累计卖出次数</span>
+                    <span class="profit-summary-value" id="profitSummaryCount">0 次</span>
+                </div>
+                <div class="profit-summary-item">
+                    <span class="profit-summary-label">累计卖出金额</span>
+                    <span class="profit-summary-value" id="profitSummaryAmount">0.00 元</span>
+                </div>
+                <div class="profit-summary-item">
+                    <span class="profit-summary-label">累计总收益</span>
+                    <span class="profit-summary-value" id="profitSummaryProfit">0.00 元</span>
+                </div>
+                <div class="profit-summary-item">
+                    <span class="profit-summary-label">平均收益率</span>
+                    <span class="profit-summary-value" id="profitSummaryRate">0.00%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选和排序区域 -->
+        <div class="filter-card">
+            <div class="filter-group">
+                <span class="filter-label">时间：</span>
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="today">今日</button>
+                <button class="filter-btn" data-filter="week">本周</button>
+                <button class="filter-btn" data-filter="month">本月</button>
+                <input type="date" class="date-input" id="startDateInput" placeholder="开始日期">
+                <input type="date" class="date-input" id="endDateInput" placeholder="结束日期">
+                <button class="filter-btn" id="customFilterBtn">筛选</button>
+            </div>
+            <div class="sort-group">
+                <span class="filter-label">排序：</span>
+                <select class="sort-select" id="sortSelect">
+                    <option value="time-desc">时间 ↓</option>
+                    <option value="time-asc">时间 ↑</option>
+                    <option value="profit-desc">收益 ↓</option>
+                    <option value="profit-asc">收益 ↑</option>
+                    <option value="rate-desc">收益率 ↓</option>
+                    <option value="rate-asc">收益率 ↑</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 收益记录表格 -->
+        <div class="record-card">
+            <div class="record-header">
+                <h3 class="card-title">📋 收益明细</h3>
+            </div>
+            <div class="table-container" id="profitTableContainer">
+                <table class="record-table">
+                    <thead>
+                        <tr>
+                            <th>卖出时间</th>
+                            <th>卖出价格</th>
+                            <th>成本价格</th>
+                            <th>卖出克数</th>
+                            <th>卖出金额</th>
+                            <th>手续费</th>
+                            <th>收益金额</th>
+                            <th>收益率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="profitRecordsBody">
+                        <!-- 动态生成 -->
+                    </tbody>
+                    <tfoot id="profitRecordsFoot">
+                        <!-- 动态生成汇总 -->
+                    </tfoot>
+                </table>
+            </div>
+            <div class="empty-tip" id="profitEmptyTip">暂无卖出记录</div>
+            <div class="pagination" id="profitPagination">
+                <!-- 动态生成 -->
+            </div>
         </div>
     </div>
 
@@ -832,10 +1099,313 @@
             alert('卖出成功！');
         }
 
+        // ==================== 卖出收益记录模块 ====================
+        let profitCurrentFilter = 'all';
+        let profitCurrentSort = 'time-desc';
+        let profitCurrentPage = 1;
+        const profitPageSize = 5;
+        let profitFilteredRecords = [];
+
+        // 计算卖出记录的收益数据
+        function calculateSellProfitData() {
+            const data = getData();
+            const sellRecords = data.sellRecords || [];
+            
+            // 为每条卖出记录计算成本价格、收益金额、收益率
+            return sellRecords.map(record => {
+                // 计算当时的加权平均成本（需要根据当时的持仓计算）
+                // 简化处理：使用当前的平均成本作为参考
+                const stats = getPortfolioStats();
+                const costPrice = stats.avgCost || record.price; // 如果没有持仓，成本价等于卖出价
+                
+                // 计算收益
+                const sellAmount = record.amount;
+                const sellFee = record.fee;
+                const costBasis = record.weight * costPrice;
+                const profit = sellAmount - sellFee - costBasis;
+                const rate = costBasis > 0 ? (profit / costBasis) * 100 : 0;
+                
+                return {
+                    ...record,
+                    costPrice: costPrice,
+                    profit: profit,
+                    rate: rate
+                };
+            });
+        }
+
+        // 获取时间范围
+        function getProfitTimeRange(filterType) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            switch (filterType) {
+                case 'today':
+                    return { start: today, end: now };
+                case 'week':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                    return { start: weekStart, end: now };
+                case 'month':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return { start: monthStart, end: now };
+                case 'custom':
+                    const startDate = document.getElementById('startDateInput').value;
+                    const endDate = document.getElementById('endDateInput').value;
+                    if (!startDate || !endDate) return null;
+                    return { start: new Date(startDate), end: new Date(endDate + 'T23:59:59') };
+                default:
+                    return null;
+            }
+        }
+
+        // 筛选收益记录
+        function filterProfitRecords() {
+            const allRecords = calculateSellProfitData();
+            const range = getProfitTimeRange(profitCurrentFilter);
+            
+            if (range) {
+                profitFilteredRecords = allRecords.filter(record => {
+                    const recordDate = new Date(record.timestamp);
+                    return recordDate >= range.start && recordDate <= range.end;
+                });
+            } else {
+                profitFilteredRecords = [...allRecords];
+            }
+            
+            // 排序
+            sortProfitRecords();
+            
+            // 重置到第一页
+            profitCurrentPage = 1;
+            
+            // 更新显示
+            renderProfitRecords();
+            renderProfitSummary();
+        }
+
+        // 排序收益记录
+        function sortProfitRecords() {
+            const [field, direction] = profitCurrentSort.split('-');
+            
+            profitFilteredRecords.sort((a, b) => {
+                let valueA, valueB;
+                
+                switch (field) {
+                    case 'time':
+                        valueA = new Date(a.timestamp).getTime();
+                        valueB = new Date(b.timestamp).getTime();
+                        break;
+                    case 'profit':
+                        valueA = a.profit;
+                        valueB = b.profit;
+                        break;
+                    case 'rate':
+                        valueA = a.rate;
+                        valueB = b.rate;
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                if (direction === 'desc') {
+                    return valueB - valueA;
+                } else {
+                    return valueA - valueB;
+                }
+            });
+        }
+
+        // 渲染收益记录表格
+        function renderProfitRecords() {
+            const tbody = document.getElementById('profitRecordsBody');
+            const tfoot = document.getElementById('profitRecordsFoot');
+            const emptyTip = document.getElementById('profitEmptyTip');
+            const tableContainer = document.getElementById('profitTableContainer');
+            
+            if (profitFilteredRecords.length === 0) {
+                tbody.innerHTML = '';
+                tfoot.innerHTML = '';
+                emptyTip.style.display = 'block';
+                tableContainer.style.display = 'none';
+                document.getElementById('profitPagination').innerHTML = '';
+                return;
+            }
+            
+            emptyTip.style.display = 'none';
+            tableContainer.style.display = 'block';
+            
+            // 分页
+            const totalPages = Math.ceil(profitFilteredRecords.length / profitPageSize);
+            const startIndex = (profitCurrentPage - 1) * profitPageSize;
+            const endIndex = startIndex + profitPageSize;
+            const pageRecords = profitFilteredRecords.slice(startIndex, endIndex);
+            
+            // 渲染表格内容
+            let totalWeight = 0;
+            let totalAmount = 0;
+            let totalFee = 0;
+            let totalProfit = 0;
+            
+            tbody.innerHTML = pageRecords.map(record => {
+                totalWeight += record.weight;
+                totalAmount += record.amount;
+                totalFee += record.fee;
+                totalProfit += record.profit;
+                
+                const profitClass = record.profit >= 0 ? 'profit-amount' : 'loss-amount';
+                const rateClass = record.rate >= 0 ? 'profit-rate' : 'loss-rate';
+                const profitSign = record.profit >= 0 ? '+' : '';
+                const rateSign = record.rate >= 0 ? '+' : '';
+                
+                return `
+                    <tr>
+                        <td>${formatTime(record.timestamp)}</td>
+                        <td>${record.price.toFixed(2)}</td>
+                        <td>${record.costPrice.toFixed(2)}</td>
+                        <td>${record.weight.toFixed(4)}</td>
+                        <td>${record.amount.toFixed(2)}</td>
+                        <td>${record.fee.toFixed(2)}</td>
+                        <td class="${profitClass}">${profitSign}${record.profit.toFixed(2)}</td>
+                        <td><span class="${rateClass}">${rateSign}${record.rate.toFixed(2)}%</span></td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // 渲染汇总行
+            const avgRate = totalAmount > 0 ? (totalProfit / (totalAmount - totalFee)) * 100 : 0;
+            const avgRateClass = avgRate >= 0 ? 'profit-rate' : 'loss-rate';
+            const avgRateSign = avgRate >= 0 ? '+' : '';
+            const totalProfitClass = totalProfit >= 0 ? 'profit-amount' : 'loss-amount';
+            const totalProfitSign = totalProfit >= 0 ? '+' : '';
+            
+            tfoot.innerHTML = `
+                <tr>
+                    <td><b>合计</b></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><b>${totalWeight.toFixed(4)}</b></td>
+                    <td><b>${totalAmount.toFixed(2)}</b></td>
+                    <td><b>${totalFee.toFixed(2)}</b></td>
+                    <td class="${totalProfitClass}"><b>${totalProfitSign}${totalProfit.toFixed(2)}</b></td>
+                    <td><span class="${avgRateClass}"><b>${avgRateSign}${avgRate.toFixed(2)}%</b></span></td>
+                </tr>
+            `;
+            
+            // 渲染分页
+            renderProfitPagination(totalPages);
+        }
+
+        // 渲染分页
+        function renderProfitPagination(totalPages) {
+            const pagination = document.getElementById('profitPagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = `<span class="page-info">共 ${profitFilteredRecords.length} 条记录</span>`;
+                return;
+            }
+            
+            let html = '';
+            
+            // 上一页按钮
+            html += `<button class="page-btn ${profitCurrentPage === 1 ? 'disabled' : ''}" 
+                        onclick="goToProfitPage(${profitCurrentPage - 1})" 
+                        ${profitCurrentPage === 1 ? 'disabled' : ''}>上一页</button>`;
+            
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === profitCurrentPage) {
+                    html += `<button class="page-btn active">${i}</button>`;
+                } else {
+                    html += `<button class="page-btn" onclick="goToProfitPage(${i})">${i}</button>`;
+                }
+            }
+            
+            // 记录数
+            html += `<span class="page-info">共 ${profitFilteredRecords.length} 条记录</span>`;
+            
+            // 下一页按钮
+            html += `<button class="page-btn ${profitCurrentPage === totalPages ? 'disabled' : ''}" 
+                        onclick="goToProfitPage(${profitCurrentPage + 1})" 
+                        ${profitCurrentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+            
+            pagination.innerHTML = html;
+        }
+
+        // 跳转页面
+        function goToProfitPage(page) {
+            profitCurrentPage = page;
+            renderProfitRecords();
+        }
+
+        // 渲染汇总卡片
+        function renderProfitSummary() {
+            const count = profitFilteredRecords.length;
+            const totalAmount = profitFilteredRecords.reduce((sum, r) => sum + r.amount, 0);
+            const totalProfit = profitFilteredRecords.reduce((sum, r) => sum + r.profit, 0);
+            const avgRate = count > 0 ? profitFilteredRecords.reduce((sum, r) => sum + r.rate, 0) / count : 0;
+            
+            document.getElementById('profitSummaryCount').textContent = count + ' 次';
+            document.getElementById('profitSummaryAmount').textContent = totalAmount.toFixed(2) + ' 元';
+            
+            const profitEl = document.getElementById('profitSummaryProfit');
+            profitEl.textContent = (totalProfit >= 0 ? '+' : '') + totalProfit.toFixed(2) + ' 元';
+            profitEl.className = 'profit-summary-value ' + (totalProfit >= 0 ? 'profit' : 'loss');
+            
+            const rateEl = document.getElementById('profitSummaryRate');
+            rateEl.textContent = (avgRate >= 0 ? '+' : '') + avgRate.toFixed(2) + '%';
+            rateEl.className = 'profit-summary-value ' + (avgRate >= 0 ? 'profit' : 'loss');
+        }
+
+        // 事件绑定 - 筛选按钮
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有按钮的active状态
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                document.getElementById('customFilterBtn').classList.remove('active');
+                
+                // 添加当前按钮的active状态
+                this.classList.add('active');
+                
+                profitCurrentFilter = this.dataset.filter;
+                filterProfitRecords();
+            });
+        });
+
+        // 自定义筛选按钮
+        document.getElementById('customFilterBtn').addEventListener('click', function() {
+            const startDate = document.getElementById('startDateInput').value;
+            const endDate = document.getElementById('endDateInput').value;
+            
+            if (!startDate || !endDate) {
+                alert('请选择开始日期和结束日期！');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('开始日期不能大于结束日期！');
+                return;
+            }
+            
+            // 移除其他按钮的active状态
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            profitCurrentFilter = 'custom';
+            filterProfitRecords();
+        });
+
+        // 排序选择
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            profitCurrentSort = this.value;
+            filterProfitRecords();
+        });
+
         // ==================== 初始化 ====================
-        // 页面加载时刷新持仓显示
+        // 页面加载时刷新持仓显示和卖出收益记录
         document.addEventListener('DOMContentLoaded', function() {
             refreshPortfolio();
+            filterProfitRecords();
         });
     </script>
 </body>
