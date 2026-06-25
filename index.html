@@ -822,6 +822,10 @@
             const amount = price * weight;
             const fee = amount * feeRate / 100;
 
+            // 获取卖出前的加权平均成本价格
+            const statsBeforeSell = getPortfolioStats();
+            const avgCostPrice = statsBeforeSell.avgCost;
+
             // 按FIFO扣减买入记录的剩余克数
             let remainingSell = parseFloat(weight);
             for (let record of data.buyRecords) {
@@ -840,7 +844,8 @@
                 weight: parseFloat(weight),
                 amount: amount,
                 feeRate: parseFloat(feeRate),
-                fee: fee
+                fee: fee,
+                costPrice: avgCostPrice  // 记录卖出时的加权平均成本价格
             };
 
             data.sellRecords.push(sellRecord);
@@ -1105,18 +1110,18 @@
         let profitCurrentPage = 1;
         const profitPageSize = 5;
         let profitFilteredRecords = [];
+        let profitSummaryCache = null; // 缓存汇总数据
+        let profitRenderTimer = null; // 渲染防抖计时器
 
         // 计算卖出记录的收益数据
         function calculateSellProfitData() {
             const data = getData();
             const sellRecords = data.sellRecords || [];
             
-            // 为每条卖出记录计算成本价格、收益金额、收益率
+            // 为每条卖出记录计算收益金额、收益率
             return sellRecords.map(record => {
-                // 计算当时的加权平均成本（需要根据当时的持仓计算）
-                // 简化处理：使用当前的平均成本作为参考
-                const stats = getPortfolioStats();
-                const costPrice = stats.avgCost || record.price; // 如果没有持仓，成本价等于卖出价
+                // 使用卖出时记录的加权平均成本价格
+                const costPrice = record.costPrice || 0;
                 
                 // 计算收益
                 const sellAmount = record.amount;
@@ -1159,8 +1164,34 @@
             }
         }
 
-        // 筛选收益记录
+        // 筛选收益记录（带防抖）
         function filterProfitRecords() {
+            // 清除之前的渲染计时器
+            if (profitRenderTimer) {
+                clearTimeout(profitRenderTimer);
+            }
+            
+            // 显示加载状态
+            showProfitLoading();
+            
+            // 使用防抖延迟渲染（100ms）
+            profitRenderTimer = setTimeout(() => {
+                requestAnimationFrame(() => {
+                    performFilterAndRender();
+                });
+            }, 100);
+        }
+
+        // 显示加载状态
+        function showProfitLoading() {
+            const tbody = document.getElementById('profitRecordsBody');
+            const tfoot = document.getElementById('profitRecordsFoot');
+            tbody.innerHTML = '<tr><td colspan="8" style="color:#999;padding:20px;">加载中...</td></tr>';
+            tfoot.innerHTML = '';
+        }
+
+        // 执行筛选和渲染
+        function performFilterAndRender() {
             const allRecords = calculateSellProfitData();
             const range = getProfitTimeRange(profitCurrentFilter);
             
@@ -1179,9 +1210,38 @@
             // 重置到第一页
             profitCurrentPage = 1;
             
+            // 计算并缓存汇总数据
+            profitSummaryCache = calculateProfitSummary();
+            
             // 更新显示
             renderProfitRecords();
             renderProfitSummary();
+        }
+
+        // 计算汇总数据（缓存）
+        function calculateProfitSummary() {
+            if (profitFilteredRecords.length === 0) {
+                return { count: 0, totalAmount: 0, totalProfit: 0, avgRate: 0 };
+            }
+            
+            let totalAmount = 0;
+            let totalProfit = 0;
+            let totalRate = 0;
+            
+            // 使用 for 循环比 reduce 更快
+            for (let i = 0; i < profitFilteredRecords.length; i++) {
+                const record = profitFilteredRecords[i];
+                totalAmount += record.amount;
+                totalProfit += record.profit;
+                totalRate += record.rate;
+            }
+            
+            return {
+                count: profitFilteredRecords.length,
+                totalAmount: totalAmount,
+                totalProfit: totalProfit,
+                avgRate: totalRate / profitFilteredRecords.length
+            };
         }
 
         // 排序收益记录
@@ -1208,15 +1268,11 @@
                         return 0;
                 }
                 
-                if (direction === 'desc') {
-                    return valueB - valueA;
-                } else {
-                    return valueA - valueB;
-                }
+                return direction === 'desc' ? valueB - valueA : valueA - valueB;
             });
         }
 
-        // 渲染收益记录表格
+        // 渲染收益记录表格（使用 DocumentFragment 优化）
         function renderProfitRecords() {
             const tbody = document.getElementById('profitRecordsBody');
             const tfoot = document.getElementById('profitRecordsFoot');
@@ -1238,39 +1294,47 @@
             // 分页
             const totalPages = Math.ceil(profitFilteredRecords.length / profitPageSize);
             const startIndex = (profitCurrentPage - 1) * profitPageSize;
-            const endIndex = startIndex + profitPageSize;
-            const pageRecords = profitFilteredRecords.slice(startIndex, endIndex);
+            const endIndex = Math.min(startIndex + profitPageSize, profitFilteredRecords.length);
             
-            // 渲染表格内容
+            // 使用 DocumentFragment 批量创建 DOM 节点
+            const fragment = document.createDocumentFragment();
+            
             let totalWeight = 0;
             let totalAmount = 0;
             let totalFee = 0;
             let totalProfit = 0;
             
-            tbody.innerHTML = pageRecords.map(record => {
+            for (let i = startIndex; i < endIndex; i++) {
+                const record = profitFilteredRecords[i];
                 totalWeight += record.weight;
                 totalAmount += record.amount;
                 totalFee += record.fee;
                 totalProfit += record.profit;
+                
+                const tr = document.createElement('tr');
                 
                 const profitClass = record.profit >= 0 ? 'profit-amount' : 'loss-amount';
                 const rateClass = record.rate >= 0 ? 'profit-rate' : 'loss-rate';
                 const profitSign = record.profit >= 0 ? '+' : '';
                 const rateSign = record.rate >= 0 ? '+' : '';
                 
-                return `
-                    <tr>
-                        <td>${formatTime(record.timestamp)}</td>
-                        <td>${record.price.toFixed(2)}</td>
-                        <td>${record.costPrice.toFixed(2)}</td>
-                        <td>${record.weight.toFixed(4)}</td>
-                        <td>${record.amount.toFixed(2)}</td>
-                        <td>${record.fee.toFixed(2)}</td>
-                        <td class="${profitClass}">${profitSign}${record.profit.toFixed(2)}</td>
-                        <td><span class="${rateClass}">${rateSign}${record.rate.toFixed(2)}%</span></td>
-                    </tr>
+                tr.innerHTML = `
+                    <td>${formatTime(record.timestamp)}</td>
+                    <td>${record.price.toFixed(2)}</td>
+                    <td>${record.costPrice.toFixed(2)}</td>
+                    <td>${record.weight.toFixed(4)}</td>
+                    <td>${record.amount.toFixed(2)}</td>
+                    <td>${record.fee.toFixed(2)}</td>
+                    <td class="${profitClass}">${profitSign}${record.profit.toFixed(2)}</td>
+                    <td><span class="${rateClass}">${rateSign}${record.rate.toFixed(2)}%</span></td>
                 `;
-            }).join('');
+                
+                fragment.appendChild(tr);
+            }
+            
+            // 批量插入 DOM
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
             
             // 渲染汇总行
             const avgRate = totalAmount > 0 ? (totalProfit / (totalAmount - totalFee)) * 100 : 0;
@@ -1296,7 +1360,7 @@
             renderProfitPagination(totalPages);
         }
 
-        // 渲染分页
+        // 渲染分页（优化大数据量下的页码显示）
         function renderProfitPagination(totalPages) {
             const pagination = document.getElementById('profitPagination');
             
@@ -1305,56 +1369,118 @@
                 return;
             }
             
-            let html = '';
+            // 使用 DocumentFragment 优化
+            const fragment = document.createDocumentFragment();
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.justifyContent = 'center';
+            container.style.gap = '8px';
+            container.style.alignItems = 'center';
             
             // 上一页按钮
-            html += `<button class="page-btn ${profitCurrentPage === 1 ? 'disabled' : ''}" 
-                        onclick="goToProfitPage(${profitCurrentPage - 1})" 
-                        ${profitCurrentPage === 1 ? 'disabled' : ''}>上一页</button>`;
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `page-btn ${profitCurrentPage === 1 ? 'disabled' : ''}`;
+            prevBtn.textContent = '上一页';
+            prevBtn.disabled = profitCurrentPage === 1;
+            if (profitCurrentPage > 1) {
+                prevBtn.onclick = () => goToProfitPage(profitCurrentPage - 1);
+            }
+            container.appendChild(prevBtn);
             
-            // 页码按钮
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === profitCurrentPage) {
-                    html += `<button class="page-btn active">${i}</button>`;
-                } else {
-                    html += `<button class="page-btn" onclick="goToProfitPage(${i})">${i}</button>`;
+            // 页码按钮（大数据量时只显示部分页码）
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, profitCurrentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.className = 'page-btn';
+                firstBtn.textContent = '1';
+                firstBtn.onclick = () => goToProfitPage(1);
+                container.appendChild(firstBtn);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.color = '#7f8c8d';
+                    container.appendChild(ellipsis);
                 }
             }
             
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === profitCurrentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                if (i !== profitCurrentPage) {
+                    pageBtn.onclick = () => goToProfitPage(i);
+                }
+                container.appendChild(pageBtn);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.color = '#7f8c8d';
+                    container.appendChild(ellipsis);
+                }
+                
+                const lastBtn = document.createElement('button');
+                lastBtn.className = 'page-btn';
+                lastBtn.textContent = totalPages;
+                lastBtn.onclick = () => goToProfitPage(totalPages);
+                container.appendChild(lastBtn);
+            }
+            
             // 记录数
-            html += `<span class="page-info">共 ${profitFilteredRecords.length} 条记录</span>`;
+            const pageInfo = document.createElement('span');
+            pageInfo.className = 'page-info';
+            pageInfo.textContent = `共 ${profitFilteredRecords.length} 条记录`;
+            container.appendChild(pageInfo);
             
             // 下一页按钮
-            html += `<button class="page-btn ${profitCurrentPage === totalPages ? 'disabled' : ''}" 
-                        onclick="goToProfitPage(${profitCurrentPage + 1})" 
-                        ${profitCurrentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `page-btn ${profitCurrentPage === totalPages ? 'disabled' : ''}`;
+            nextBtn.textContent = '下一页';
+            nextBtn.disabled = profitCurrentPage === totalPages;
+            if (profitCurrentPage < totalPages) {
+                nextBtn.onclick = () => goToProfitPage(profitCurrentPage + 1);
+            }
+            container.appendChild(nextBtn);
             
-            pagination.innerHTML = html;
+            fragment.appendChild(container);
+            pagination.innerHTML = '';
+            pagination.appendChild(fragment);
         }
 
-        // 跳转页面
+        // 跳转页面（带防抖）
         function goToProfitPage(page) {
             profitCurrentPage = page;
-            renderProfitRecords();
+            
+            // 使用 requestAnimationFrame 优化渲染
+            requestAnimationFrame(() => {
+                renderProfitRecords();
+            });
         }
 
-        // 渲染汇总卡片
+        // 渲染汇总卡片（使用缓存）
         function renderProfitSummary() {
-            const count = profitFilteredRecords.length;
-            const totalAmount = profitFilteredRecords.reduce((sum, r) => sum + r.amount, 0);
-            const totalProfit = profitFilteredRecords.reduce((sum, r) => sum + r.profit, 0);
-            const avgRate = count > 0 ? profitFilteredRecords.reduce((sum, r) => sum + r.rate, 0) / count : 0;
+            const summary = profitSummaryCache || calculateProfitSummary();
             
-            document.getElementById('profitSummaryCount').textContent = count + ' 次';
-            document.getElementById('profitSummaryAmount').textContent = totalAmount.toFixed(2) + ' 元';
+            document.getElementById('profitSummaryCount').textContent = summary.count + ' 次';
+            document.getElementById('profitSummaryAmount').textContent = summary.totalAmount.toFixed(2) + ' 元';
             
             const profitEl = document.getElementById('profitSummaryProfit');
-            profitEl.textContent = (totalProfit >= 0 ? '+' : '') + totalProfit.toFixed(2) + ' 元';
-            profitEl.className = 'profit-summary-value ' + (totalProfit >= 0 ? 'profit' : 'loss');
+            profitEl.textContent = (summary.totalProfit >= 0 ? '+' : '') + summary.totalProfit.toFixed(2) + ' 元';
+            profitEl.className = 'profit-summary-value ' + (summary.totalProfit >= 0 ? 'profit' : 'loss');
             
             const rateEl = document.getElementById('profitSummaryRate');
-            rateEl.textContent = (avgRate >= 0 ? '+' : '') + avgRate.toFixed(2) + '%';
-            rateEl.className = 'profit-summary-value ' + (avgRate >= 0 ? 'profit' : 'loss');
+            rateEl.textContent = (summary.avgRate >= 0 ? '+' : '') + summary.avgRate.toFixed(2) + '%';
+            rateEl.className = 'profit-summary-value ' + (summary.avgRate >= 0 ? 'profit' : 'loss');
         }
 
         // 事件绑定 - 筛选按钮
