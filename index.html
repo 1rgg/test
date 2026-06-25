@@ -422,19 +422,78 @@
     <script>
         // ==================== 数据存储模块 ====================
         const STORAGE_KEY = 'goldTradeData';
+        const DATA_VERSION = 1;  // 数据版本号，便于未来升级
+
+        // 检测 localStorage 是否可用
+        function isLocalStorageAvailable() {
+            try {
+                const testKey = '__test__';
+                localStorage.setItem(testKey, testKey);
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // 获取默认数据结构
+        function getDefaultData() {
+            return {
+                version: DATA_VERSION,
+                buyRecords: [],
+                sellRecords: []
+            };
+        }
 
         // 获取所有数据
         function getData() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                return JSON.parse(data);
+            if (!isLocalStorageAvailable()) {
+                console.warn('localStorage 不可用，数据将无法持久化保存');
+                return getDefaultData();
             }
-            return { buyRecords: [], sellRecords: [] };
+
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    // 检查数据版本，如果版本不匹配则使用默认数据
+                    if (parsed.version !== DATA_VERSION) {
+                        console.warn('数据版本不匹配，使用默认数据结构');
+                        return getDefaultData();
+                    }
+                    // 确保必要字段存在
+                    if (!parsed.buyRecords) parsed.buyRecords = [];
+                    if (!parsed.sellRecords) parsed.sellRecords = [];
+                    return parsed;
+                }
+            } catch (e) {
+                console.error('数据解析失败，使用默认数据:', e);
+                // 数据损坏时清除旧数据
+                localStorage.removeItem(STORAGE_KEY);
+            }
+            return getDefaultData();
         }
 
         // 保存所有数据
         function saveData(data) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            if (!isLocalStorageAvailable()) {
+                console.warn('localStorage 不可用，数据无法保存');
+                return false;
+            }
+
+            try {
+                // 确保数据版本号存在
+                data.version = DATA_VERSION;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    alert('存储空间不足！请清理部分历史记录后重试。');
+                } else {
+                    console.error('数据保存失败:', e);
+                }
+                return false;
+            }
         }
 
         // 生成唯一ID
@@ -604,7 +663,7 @@
         function refreshPortfolio() {
             const data = getData();
             const stats = getPortfolioStats();
-            const sellFeeRate = parseFloat(document.getElementById('sellFeeRateInput').value) || 0.1;
+            const sellFeeRate = parseFloat(document.getElementById('sellFeeRateInput').value) || 0.4;
 
             // 更新统计卡片
             document.getElementById('statTotalWeight').textContent = stats.totalWeight.toFixed(4) + ' 克';
