@@ -1712,6 +1712,12 @@
             }
         }
 
+        function safeText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+            return el;
+        }
+
         function updateGoldPriceUI() {
             if (!currentGoldData) return;
 
@@ -1723,14 +1729,14 @@
 
             priceEl.textContent = currentPrice.toFixed(2);
             priceEl.dataset.price = currentPrice;
-            document.getElementById('goldPriceSell').textContent = currentGoldData.sellPrice.toFixed(2);
-            document.getElementById('goldPriceHigh').textContent = currentGoldData.highPrice.toFixed(2);
-            document.getElementById('goldPriceLow').textContent = currentGoldData.lowPrice.toFixed(2);
-            document.getElementById('goldPriceOpen').textContent = currentGoldData.todayPrice.toFixed(2);
-            document.getElementById('goldPriceUpdate').textContent = '更新于 ' + (currentGoldData.updated || formatTime(new Date()));
+            safeText('goldPriceSell', currentGoldData.sellPrice.toFixed(2));
+            safeText('goldPriceHigh', currentGoldData.highPrice.toFixed(2));
+            safeText('goldPriceLow', currentGoldData.lowPrice.toFixed(2));
+            safeText('goldPriceOpen', currentGoldData.todayPrice.toFixed(2));
+            safeText('goldPriceUpdate', '更新于 ' + (currentGoldData.updated || formatTime(new Date())));
 
             const changeEl = document.getElementById('goldPriceChange');
-            if (prevPrice && parseFloat(prevPrice) > 0) {
+            if (changeEl && prevPrice && parseFloat(prevPrice) > 0) {
                 const diff = currentPrice - parseFloat(prevPrice);
                 if (Math.abs(diff) > 0.01) {
                     changeEl.style.display = 'inline';
@@ -1740,7 +1746,7 @@
                     changeEl.style.display = 'none';
                 }
             }
-            document.getElementById('autoPriceHint').textContent = currentGoldData.sellPrice.toFixed(2);
+            safeText('autoPriceHint', currentGoldData.sellPrice.toFixed(2));
         }
 
         function recordPriceSnapshot() {
@@ -1921,6 +1927,7 @@
 
         function showToast(message, type) {
             const toast = document.getElementById('chartRefreshToast');
+            if (!toast) return;
             if (refreshTimer) clearTimeout(refreshTimer);
             toast.textContent = message;
             toast.className = 'chart-refresh-toast ' + type + ' show';
