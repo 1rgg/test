@@ -849,7 +849,7 @@
         .filter-bar {
             display: flex;
             gap: 8px;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
             padding: 10px 0;
             border-bottom: 1px solid #eee;
@@ -858,9 +858,21 @@
 
         .filter-group {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .filter-row {
+            display: flex;
             gap: 5px;
             align-items: center;
             flex-wrap: wrap;
+        }
+
+        .filter-date-row {
+            width: 100%;
         }
 
         .filter-btn {
@@ -893,12 +905,14 @@
             border: 1px solid var(--color-border);
             border-radius: 6px;
             font-size: 13px;
-            min-width: 115px;
-            width: 115px;
+            min-width: 130px;
+            width: 130px;
             min-height: 34px;
             -webkit-appearance: none;
             appearance: none;
             text-overflow: ellipsis;
+            flex: 1 1 auto;
+            max-width: 180px;
         }
 
         .date-input:focus {
@@ -1127,17 +1141,26 @@
             }
 
             .filter-group {
+                gap: 8px;
+                flex-direction: column;
+            }
+
+            .filter-row {
                 gap: 4px;
                 flex-wrap: wrap;
             }
 
+            .filter-date-row {
+                width: 100%;
+            }
+
             .date-input {
                 min-width: 110px;
-                width: 110px;
-                flex: 1 0 110px;
+                flex: 1 1 40%;
                 font-size: 14px;
                 min-height: 44px;
                 padding: 10px 10px;
+                width: auto;
             }
 
             .filter-btn {
@@ -1189,10 +1212,18 @@
 
             .date-input {
                 min-width: 100px;
-                width: 100%;
-                flex: 1 1 100px;
+                width: auto;
+                flex: 1 1 40%;
                 font-size: 14px;
                 min-height: 44px;
+            }
+
+            .filter-row {
+                gap: 4px;
+            }
+
+            .filter-date-row {
+                width: 100%;
             }
 
             .filter-bar {
@@ -1442,15 +1473,19 @@
             </div>
             <div class="filter-bar">
                 <div class="filter-group">
-                    <span class="filter-label">时间：</span>
-                    <button class="filter-btn active" data-filter="all">全部</button>
-                    <button class="filter-btn" data-filter="today">今日</button>
-                    <button class="filter-btn" data-filter="week">本周</button>
-                    <button class="filter-btn" data-filter="month">本月</button>
-                    <input type="date" class="date-input" id="startDateInput">
-                    <span class="filter-label">至</span>
-                    <input type="date" class="date-input" id="endDateInput">
-                    <button class="filter-btn" id="customFilterBtn">筛选</button>
+                    <div class="filter-row">
+                        <span class="filter-label">时间：</span>
+                        <button class="filter-btn active" data-filter="all">全部</button>
+                        <button class="filter-btn" data-filter="today">今日</button>
+                        <button class="filter-btn" data-filter="week">本周</button>
+                        <button class="filter-btn" data-filter="month">本月</button>
+                    </div>
+                    <div class="filter-row filter-date-row">
+                        <input type="date" class="date-input" id="startDateInput">
+                        <span class="filter-label">至</span>
+                        <input type="date" class="date-input" id="endDateInput">
+                        <button class="filter-btn" id="customFilterBtn">筛选</button>
+                    </div>
                 </div>
                 <div class="sort-group">
                     <span class="filter-label">排序：</span>
