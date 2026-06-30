@@ -647,7 +647,7 @@
         }
 
         .btn-auto-price {
-            padding: 10px 10px;
+            padding: 10px 12px;
             min-width: 44px;
             min-height: var(--touch-min);
             background: linear-gradient(135deg, #f39c12, #e67e22);
@@ -658,6 +658,7 @@
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
+            flex-shrink: 0;
             transition: all 0.2s;
             touch-action: manipulation;
             -webkit-appearance: none;
@@ -1094,12 +1095,28 @@
             }
 
             .price-input-row {
-                flex-direction: row;
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .btn-auto-price {
-                font-size: 12px;
-                padding: 8px 8px;
+                font-size: 13px;
+                padding: 10px 12px;
+                white-space: normal;
+                min-width: 0;
+            }
+
+            .btn-auto-price .price-hint {
+                display: inline;
+                margin-left: 4px;
+            }
+
+            .btn-auto-price .price-hint::before {
+                content: '(';
+            }
+
+            .btn-auto-price .price-hint::after {
+                content: ')';
             }
 
             .date-input {
@@ -1136,8 +1153,22 @@
             }
 
             .btn-auto-price {
-                font-size: 11px;
-                padding: 6px 6px;
+                font-size: 12px;
+                padding: 10px 10px;
+                white-space: normal;
+            }
+
+            .btn-auto-price .price-hint {
+                display: inline;
+                margin-left: 4px;
+            }
+
+            .btn-auto-price .price-hint::before {
+                content: '(';
+            }
+
+            .btn-auto-price .price-hint::after {
+                content: ')';
             }
         }
     </style>
