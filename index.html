@@ -1713,11 +1713,15 @@
 
         function updateGoldPriceUI() {
             if (!currentGoldData) return;
-            const prevPrice = document.getElementById('goldPriceCurrent').dataset.price;
+
+            const priceEl = document.getElementById('goldPriceCurrent');
+            if (!priceEl) return;
+
+            const prevPrice = priceEl.dataset.price;
             const currentPrice = currentGoldData.todayPrice;
 
-            document.getElementById('goldPriceCurrent').textContent = currentPrice.toFixed(2);
-            document.getElementById('goldPriceCurrent').dataset.price = currentPrice;
+            priceEl.textContent = currentPrice.toFixed(2);
+            priceEl.dataset.price = currentPrice;
             document.getElementById('goldPriceSell').textContent = currentGoldData.sellPrice.toFixed(2);
             document.getElementById('goldPriceHigh').textContent = currentGoldData.highPrice.toFixed(2);
             document.getElementById('goldPriceLow').textContent = currentGoldData.lowPrice.toFixed(2);
@@ -1926,6 +1930,9 @@
         async function refreshHourlyChart() {
             const btn = document.getElementById('hourlyRefreshBtn');
             const statusEl = document.getElementById('goldPriceStatus');
+
+            // DOM 元素未就绪则跳过
+            if (!btn || !statusEl) return;
 
             // 防止重复点击
             if (btn.classList.contains('loading')) return;
