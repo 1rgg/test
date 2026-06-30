@@ -893,10 +893,12 @@
             border: 1px solid var(--color-border);
             border-radius: 6px;
             font-size: 13px;
+            min-width: 115px;
             width: 115px;
             min-height: 34px;
             -webkit-appearance: none;
             appearance: none;
+            text-overflow: ellipsis;
         }
 
         .date-input:focus {
@@ -1119,9 +1121,23 @@
                 content: ')';
             }
 
+            .filter-bar {
+                gap: 6px;
+                padding: 8px 0;
+            }
+
+            .filter-group {
+                gap: 4px;
+                flex-wrap: wrap;
+            }
+
             .date-input {
-                width: 100px;
-                font-size: 12px;
+                min-width: 110px;
+                width: 110px;
+                flex: 1 0 110px;
+                font-size: 14px;
+                min-height: 44px;
+                padding: 10px 10px;
             }
 
             .filter-btn {
@@ -1169,6 +1185,22 @@
 
             .btn-auto-price .price-hint::after {
                 content: ')';
+            }
+
+            .date-input {
+                min-width: 100px;
+                width: 100%;
+                flex: 1 1 100px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+
+            .filter-bar {
+                gap: 4px;
+            }
+
+            .filter-group {
+                gap: 4px;
             }
         }
     </style>
