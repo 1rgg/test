@@ -2,88 +2,132 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>积存金持仓管理系统</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
     </script>
     <style>
+        :root {
+            --touch-min: 44px;
+            --font-base: 14px;
+            --font-sm: 12px;
+            --font-lg: 16px;
+            --font-xl: 18px;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --color-primary: #27ae60;
+            --color-danger: #e74c3c;
+            --color-blue: #3498db;
+            --color-gold: #ffd700;
+            --color-bg: #f5f7fa;
+            --color-text: #2c3e50;
+            --color-text-light: #7f8c8d;
+            --color-border: #ddd;
+            --spacing: 12px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background-color: #f5f7fa;
-            padding: 20px;
+            background-color: var(--color-bg);
+            padding: var(--spacing);
             max-width: 700px;
             margin: 0 auto;
+            font-size: var(--font-base);
+            color: var(--color-text);
+            -webkit-text-size-adjust: 100%;
+            -webkit-overflow-scrolling: touch;
         }
 
         .calculator-box {
             background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         }
 
         .title {
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 24px;
+            color: var(--color-text);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #34495e;
             font-weight: 500;
+            font-size: var(--font-base);
         }
 
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
             font-size: 16px;
             outline: none;
             transition: border 0.3s;
+            background: white;
+            min-height: var(--touch-min);
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input:focus {
-            border-color: #27ae60;
+            border-color: var(--color-primary);
         }
 
         .btn-calc {
             width: 100%;
             padding: 14px;
-            background-color: #27ae60;
+            min-height: var(--touch-min);
+            background-color: var(--color-primary);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
+            transition: background 0.2s;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .btn-calc:hover {
-            background-color: #219653;
+        .btn-calc:active {
+            background-color: #1e8449;
+            transform: scale(0.98);
+        }
+
+        @media (hover: hover) {
+            .btn-calc:hover {
+                background-color: #219653;
+            }
         }
 
         /* ========== 实时金价卡片 ========== */
         .gold-price-card {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
             position: relative;
             overflow: hidden;
         }
@@ -93,34 +137,38 @@
             position: absolute;
             top: -50%;
             right: -30%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.12) 0%, transparent 70%);
             border-radius: 50%;
+            pointer-events: none;
         }
 
         .gold-price-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             position: relative;
             z-index: 1;
         }
 
         .gold-price-header .card-title {
-            font-size: 16px;
+            font-size: var(--font-base);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .gold-price-status {
             font-size: 11px;
-            padding: 3px 10px;
+            padding: 4px 10px;
             border-radius: 10px;
             background: rgba(46, 204, 113, 0.2);
             color: #2ecc71;
+            min-height: 22px;
+            display: flex;
+            align-items: center;
         }
 
         .gold-price-status.error {
@@ -131,29 +179,29 @@
         .gold-price-main {
             display: flex;
             align-items: baseline;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 10px;
             position: relative;
             z-index: 1;
         }
 
         .gold-price-current {
-            font-size: 42px;
+            font-size: 38px;
             font-weight: bold;
-            color: #ffd700;
+            color: var(--color-gold);
             line-height: 1;
         }
 
         .gold-price-unit {
-            font-size: 14px;
+            font-size: var(--font-base);
             color: rgba(255, 255, 255, 0.6);
         }
 
         .gold-price-change {
-            font-size: 14px;
+            font-size: 13px;
             padding: 2px 8px;
             border-radius: 4px;
-            margin-left: 8px;
+            margin-left: 6px;
         }
 
         .gold-price-change.up {
@@ -169,26 +217,26 @@
         .gold-price-info {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 8px;
             position: relative;
             z-index: 1;
         }
 
         .gold-price-info-item {
             background: rgba(255, 255, 255, 0.08);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px 6px;
+            border-radius: var(--radius);
             text-align: center;
         }
 
         .gold-price-info-label {
             font-size: 11px;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .gold-price-info-value {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
 
@@ -204,7 +252,7 @@
             text-align: right;
             font-size: 11px;
             color: rgba(255, 255, 255, 0.4);
-            margin-top: 10px;
+            margin-top: 8px;
             position: relative;
             z-index: 1;
         }
@@ -212,22 +260,54 @@
         /* ========== 图表区域 ========== */
         .chart-card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 14px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .chart-card .card-title {
-            font-size: 16px;
-            color: #2c3e50;
-            margin-bottom: 15px;
+            font-size: var(--font-base);
+            color: var(--color-text);
+            margin-bottom: 10px;
+        }
+
+        .chart-section {
+            margin-bottom: 14px;
+        }
+
+        .chart-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .chart-section-title {
+            font-size: 13px;
+            color: var(--color-text-light);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-section-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .chart-section-dot.gold {
+            background: #ffd700;
+        }
+
+        .chart-section-dot.blue {
+            background: #3498db;
         }
 
         .chart-container {
             position: relative;
             width: 100%;
-            height: 250px;
+            height: 200px;
         }
 
         .chart-container canvas {
@@ -235,51 +315,50 @@
             height: 100% !important;
         }
 
-        .chart-tabs {
+        .chart-divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 10px 0;
+        }
+
+        .chart-swipe-hint {
+            text-align: center;
+            font-size: 11px;
+            color: #bdc3c7;
+            margin-top: 6px;
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .chart-tab {
-            padding: 6px 14px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: white;
+        .chart-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #bdc3c7;
             font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .chart-tab:hover {
-            border-color: #3498db;
-            color: #3498db;
-        }
-
-        .chart-tab.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
         }
 
         /* ========== 持仓统计卡片 ========== */
         .stats-card {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
         }
 
         .stats-card .card-title {
-            margin-bottom: 15px;
-            font-size: 18px;
+            margin-bottom: 12px;
+            font-size: var(--font-lg);
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            gap: 10px;
         }
 
         .stat-item {
@@ -288,45 +367,45 @@
 
         .stat-label {
             display: block;
-            font-size: 12px;
+            font-size: var(--font-sm);
             opacity: 0.9;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .stat-value {
             display: block;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
 
         .break-even-box {
-            margin-top: 15px;
-            padding: 12px;
+            margin-top: 12px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border-radius: var(--radius);
             text-align: center;
-            font-size: 16px;
+            font-size: var(--font-base);
         }
 
         .form-card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .card-title {
-            font-size: 16px;
-            color: #2c3e50;
-            margin-bottom: 15px;
+            font-size: var(--font-lg);
+            color: var(--color-text);
+            margin-bottom: 12px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
         .preview-group {
@@ -337,31 +416,48 @@
 
         .preview-value {
             padding: 12px 0;
-            font-size: 16px;
+            font-size: var(--font-base);
             font-weight: 600;
-            color: #27ae60;
+            color: var(--color-primary);
         }
 
         .sell-type-group {
             display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
+            gap: 24px;
+            margin-bottom: 12px;
         }
 
         .radio-label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             cursor: pointer;
             color: #34495e;
+            font-size: var(--font-base);
+            min-height: var(--touch-min);
+            padding: 4px 0;
+        }
+
+        .radio-label input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            min-height: auto;
+            accent-color: var(--color-primary);
         }
 
         .btn-sell {
-            background-color: #e74c3c;
+            background-color: var(--color-danger);
         }
 
-        .btn-sell:hover {
-            background-color: #c0392b;
+        @media (hover: hover) {
+            .btn-sell:hover {
+                background-color: #c0392b;
+            }
+        }
+
+        .btn-sell:active {
+            background-color: #a93226;
+            transform: scale(0.98);
         }
 
         /* ========== 自动获取金价按钮 ========== */
@@ -377,47 +473,53 @@
         }
 
         .btn-auto-price {
-            padding: 12px 12px;
+            padding: 10px 10px;
+            min-width: 44px;
+            min-height: var(--touch-min);
             background: linear-gradient(135deg, #f39c12, #e67e22);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius);
             font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
-            transition: all 0.3s;
-            height: 46px;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .btn-auto-price:hover {
-            background: linear-gradient(135deg, #e67e22, #d35400);
+        .btn-auto-price:active {
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .btn-auto-price.loading {
             opacity: 0.7;
-            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .btn-auto-price .price-hint {
             font-size: 10px;
-            opacity: 0.8;
+            opacity: 0.85;
             display: block;
         }
 
         /* ========== 记录卡片 ========== */
         .record-card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .record-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .record-header .card-title {
@@ -425,44 +527,63 @@
         }
 
         .btn-clear {
-            padding: 6px 12px;
-            background: #e74c3c;
+            padding: 8px 14px;
+            min-height: var(--touch-min);
+            background: var(--color-danger);
             color: white;
             border: none;
             border-radius: 6px;
             font-size: 13px;
             cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .btn-clear:hover {
-            background: #c0392b;
+        .btn-clear:active {
+            opacity: 0.8;
         }
 
         .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+        }
+
+        .table-scroll-hint {
+            display: none;
+            text-align: center;
+            font-size: 11px;
+            color: #bdc3c7;
+            padding: 4px 0;
         }
 
         .record-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: var(--font-base);
+            min-width: 560px;
         }
 
         .record-table th,
         .record-table td {
-            padding: 12px 8px;
+            padding: 10px 6px;
             text-align: center;
             border-bottom: 1px solid #eee;
+            white-space: nowrap;
         }
 
         .record-table th {
             background: #f8f9fa;
-            color: #7f8c8d;
+            color: var(--color-text-light);
             font-weight: 500;
+            font-size: 13px;
+            position: sticky;
+            top: 0;
         }
 
-        .record-table tbody tr:hover {
-            background: #f8f9fa;
+        .record-table tbody tr:active {
+            background: #f0f4f8;
         }
 
         .record-table tfoot td {
@@ -471,17 +592,21 @@
         }
 
         .btn-delete {
-            padding: 4px 10px;
-            background: #e74c3c;
+            padding: 6px 12px;
+            min-height: 32px;
+            background: var(--color-danger);
             color: white;
             border: none;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .btn-delete:hover {
-            background: #c0392b;
+        .btn-delete:active {
+            opacity: 0.8;
         }
 
         .empty-tip {
@@ -489,6 +614,7 @@
             color: #999;
             padding: 30px 0;
             display: none;
+            font-size: var(--font-base);
         }
 
         .profit-text {
@@ -503,20 +629,20 @@
         .profit-summary-card {
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
         }
 
         .profit-summary-card .card-title {
-            margin-bottom: 15px;
-            font-size: 18px;
+            margin-bottom: 12px;
+            font-size: var(--font-lg);
         }
 
         .profit-summary-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 10px;
         }
 
         .profit-summary-item {
@@ -525,14 +651,14 @@
 
         .profit-summary-label {
             display: block;
-            font-size: 12px;
+            font-size: var(--font-sm);
             opacity: 0.9;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .profit-summary-value {
             display: block;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
 
@@ -544,76 +670,91 @@
             color: #e74c3c;
         }
 
-        /* ========== 筛选区域（整合到收益记录中） ========== */
+        /* ========== 筛选区域 ========== */
         .filter-bar {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             flex-wrap: wrap;
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .filter-group {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
+            padding: 7px 11px;
+            min-height: 34px;
+            border: 1px solid var(--color-border);
             border-radius: 6px;
             background: white;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .filter-btn:hover {
-            border-color: #3498db;
-            color: #3498db;
+        .filter-btn:active {
+            border-color: var(--color-blue);
+            color: var(--color-blue);
         }
 
         .filter-btn.active {
-            background: #3498db;
+            background: var(--color-blue);
             color: white;
-            border-color: #3498db;
+            border-color: var(--color-blue);
         }
 
         .date-input {
-            padding: 5px 8px;
-            border: 1px solid #ddd;
+            padding: 7px 8px;
+            border: 1px solid var(--color-border);
             border-radius: 6px;
-            font-size: 12px;
-            width: 120px;
+            font-size: 13px;
+            width: 115px;
+            min-height: 34px;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .date-input:focus {
-            border-color: #3498db;
+            border-color: var(--color-blue);
             outline: none;
         }
 
         .sort-group {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             align-items: center;
             margin-left: auto;
         }
 
         .sort-select {
-            padding: 5px 8px;
-            border: 1px solid #ddd;
+            padding: 7px 8px;
+            border: 1px solid var(--color-border);
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 13px;
             background: white;
             cursor: pointer;
+            min-height: 34px;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237f8c8d'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 24px;
         }
 
         .filter-label {
-            font-size: 12px;
-            color: #7f8c8d;
+            font-size: 13px;
+            color: var(--color-text-light);
             white-space: nowrap;
         }
 
@@ -646,66 +787,187 @@
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 6px;
+            margin-top: 16px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .page-btn {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
+            padding: 10px 14px;
+            min-height: var(--touch-min);
+            min-width: var(--touch-min);
+            border: 1px solid var(--color-border);
             border-radius: 6px;
             background: white;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .page-btn:hover:not(.disabled) {
-            border-color: #3498db;
-            color: #3498db;
+        .page-btn:active:not(.disabled) {
+            border-color: var(--color-blue);
+            color: var(--color-blue);
         }
 
         .page-btn.active {
-            background: #3498db;
+            background: var(--color-blue);
             color: white;
-            border-color: #3498db;
+            border-color: var(--color-blue);
         }
 
         .page-btn.disabled {
             color: #ccc;
-            cursor: not-allowed;
+            pointer-events: none;
             opacity: 0.5;
         }
 
         .page-info {
-            color: #7f8c8d;
+            color: var(--color-text-light);
             font-size: 13px;
             padding: 8px;
         }
 
-        @media (max-width: 500px) {
+        /* ========== 移动端响应式 (320px - 428px) ========== */
+        @media screen and (max-width: 428px) {
+            body {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .calculator-box {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .title {
+                font-size: 18px;
+                margin-bottom: 16px;
+            }
+
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 8px;
             }
+
             .form-row {
                 grid-template-columns: 1fr;
+                gap: 8px;
+                margin-bottom: 8px;
             }
+
             .profit-summary-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
+
             .gold-price-info {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
             }
+
+            .gold-price-current {
+                font-size: 32px;
+            }
+
+            .gold-price-card {
+                padding: 14px;
+            }
+
             .filter-bar {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 6px;
             }
+
             .sort-group {
                 margin-left: 0;
+                justify-content: flex-end;
             }
+
             .chart-container {
-                height: 200px;
+                height: 180px;
+            }
+
+            .record-table {
+                font-size: 13px;
+            }
+
+            .form-card,
+            .record-card,
+            .stats-card,
+            .profit-summary-card,
+            .chart-card {
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+
+            .btn-calc {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .page-btn {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .sell-type-group {
+                gap: 16px;
+            }
+
+            .table-scroll-hint {
+                display: block;
+            }
+
+            .price-input-row {
+                flex-direction: row;
+            }
+
+            .btn-auto-price {
+                font-size: 12px;
+                padding: 8px 8px;
+            }
+
+            .date-input {
+                width: 100px;
+                font-size: 12px;
+            }
+
+            .filter-btn {
+                font-size: 12px;
+                padding: 6px 9px;
+            }
+        }
+
+        @media screen and (max-width: 360px) {
+            .gold-price-info {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 4px;
+            }
+
+            .gold-price-info-item {
+                padding: 6px 4px;
+            }
+
+            .gold-price-info-value {
+                font-size: 13px;
+            }
+
+            .gold-price-current {
+                font-size: 28px;
+            }
+
+            .chart-container {
+                height: 160px;
+            }
+
+            .btn-auto-price {
+                font-size: 11px;
+                padding: 6px 6px;
             }
         }
     </style>
@@ -746,14 +1008,30 @@
             <div class="gold-price-update" id="goldPriceUpdate">--</div>
         </div>
 
-        <!-- ========== 金价走势图表 ========== -->
-        <div class="chart-card">
-            <div class="chart-tabs">
-                <button class="chart-tab active" data-chart="hourly">日内走势</button>
-                <button class="chart-tab" data-chart="daily">历史走势</button>
+        <!-- ========== 金价走势图表（双维度同屏展示） ========== -->
+        <div class="chart-card" id="chartCard">
+            <h3 class="card-title">金价走势</h3>
+            <!-- 当日小时走势 -->
+            <div class="chart-section">
+                <div class="chart-section-title">
+                    <span class="chart-section-dot gold"></span> 当日小时走势
+                </div>
+                <div class="chart-container" id="hourlyChartContainer">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
             </div>
-            <div class="chart-container" id="chartContainer">
-                <canvas id="priceChart"></canvas>
+            <hr class="chart-divider">
+            <!-- 近7日走势 -->
+            <div class="chart-section">
+                <div class="chart-section-title">
+                    <span class="chart-section-dot blue"></span> 近7日走势
+                </div>
+                <div class="chart-container" id="dailyChartContainer">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-swipe-hint">
+                <span>点击数据点查看详情</span>
             </div>
         </div>
 
@@ -785,17 +1063,17 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>买入价格（元/克）</label>
-                    <input type="number" id="buyPriceInput" placeholder="请输入买入单价" step="0.01">
+                    <input type="number" id="buyPriceInput" placeholder="请输入买入单价" step="0.01" inputmode="decimal">
                 </div>
                 <div class="form-group">
                     <label>买入克数（克）</label>
-                    <input type="number" id="buyWeightInput" placeholder="请输入买入克数" step="1">
+                    <input type="number" id="buyWeightInput" placeholder="请输入买入克数" step="1" inputmode="decimal">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>买入手续费率（%）</label>
-                    <input type="number" id="buyFeeRateInput" placeholder="默认0.0%" value="0.0" step="0.1">
+                    <input type="number" id="buyFeeRateInput" placeholder="默认0.0%" value="0.0" step="0.1" inputmode="decimal">
                 </div>
                 <div class="form-group preview-group">
                     <label>预计买入金额</label>
@@ -828,7 +1106,7 @@
                 <div class="form-group">
                     <label>卖出价格（元/克）</label>
                     <div class="price-input-row">
-                        <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01" style="flex:1;">
+                        <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01" inputmode="decimal">
                         <button class="btn-auto-price" id="btnAutoPrice" onclick="fetchGoldPriceForSell()" title="自动获取实时金价">
                             获取实时价
                             <span class="price-hint" id="autoPriceHint"></span>
@@ -837,13 +1115,13 @@
                 </div>
                 <div class="form-group">
                     <label id="sellQuantityLabel">卖出克数（克）</label>
-                    <input type="number" id="sellQuantityInput" placeholder="请输入卖出数量" step="1">
+                    <input type="number" id="sellQuantityInput" placeholder="请输入卖出数量" step="1" inputmode="decimal">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>卖出手续费率（%）</label>
-                    <input type="number" id="sellFeeRateInput" placeholder="默认0.4%" value="0.4" step="0.1">
+                    <input type="number" id="sellFeeRateInput" placeholder="默认0.4%" value="0.4" step="0.1" inputmode="decimal">
                 </div>
                 <div class="form-group preview-group">
                     <label>预计卖出金额</label>
@@ -890,6 +1168,7 @@
                     <tfoot id="buyRecordsFoot"></tfoot>
                 </table>
             </div>
+            <div class="table-scroll-hint">← 左右滑动查看完整表格 →</div>
             <div class="empty-tip" id="emptyTip">暂无买入记录</div>
         </div>
 
@@ -921,7 +1200,6 @@
             <div class="record-header">
                 <h3 class="card-title">收益明细</h3>
             </div>
-            <!-- 筛选和排序区域（整合到收益明细中） -->
             <div class="filter-bar">
                 <div class="filter-group">
                     <span class="filter-label">时间：</span>
@@ -974,6 +1252,7 @@
         const STORAGE_KEY = 'goldTradeData';
         const GOLD_PRICE_HISTORY_KEY = 'goldPriceHistory';
         const GOLD_PRICE_DAILY_KEY = 'goldPriceDaily';
+        const GOLD_PRICE_LAST_WEEKLY_UPDATE = 'goldPriceLastWeeklyUpdate';
         const DATA_VERSION = 1;
 
         function isLocalStorageAvailable() {
@@ -988,42 +1267,28 @@
         }
 
         function getDefaultData() {
-            return {
-                version: DATA_VERSION,
-                buyRecords: [],
-                sellRecords: []
-            };
+            return { version: DATA_VERSION, buyRecords: [], sellRecords: [] };
         }
 
         function getData() {
-            if (!isLocalStorageAvailable()) {
-                console.warn('localStorage 不可用');
-                return getDefaultData();
-            }
+            if (!isLocalStorageAvailable()) { return getDefaultData(); }
             try {
                 const data = localStorage.getItem(STORAGE_KEY);
                 if (data) {
                     const parsed = JSON.parse(data);
-                    if (parsed.version !== DATA_VERSION) {
-                        console.warn('数据版本不匹配');
-                        return getDefaultData();
-                    }
+                    if (parsed.version !== DATA_VERSION) { return getDefaultData(); }
                     if (!parsed.buyRecords) parsed.buyRecords = [];
                     if (!parsed.sellRecords) parsed.sellRecords = [];
                     return parsed;
                 }
             } catch (e) {
-                console.error('数据解析失败:', e);
                 localStorage.removeItem(STORAGE_KEY);
             }
             return getDefaultData();
         }
 
         function saveData(data) {
-            if (!isLocalStorageAvailable()) {
-                console.warn('localStorage 不可用');
-                return false;
-            }
+            if (!isLocalStorageAvailable()) { return false; }
             try {
                 data.version = DATA_VERSION;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -1031,8 +1296,6 @@
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
                     alert('存储空间不足！请清理部分历史记录后重试。');
-                } else {
-                    console.error('数据保存失败:', e);
                 }
                 return false;
             }
@@ -1044,12 +1307,8 @@
 
         function formatTime(date) {
             const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hour = String(d.getHours()).padStart(2, '0');
-            const minute = String(d.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hour}:${minute}`;
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
         }
 
         function formatTimeShort(date) {
@@ -1059,17 +1318,20 @@
 
         function formatDate(date) {
             const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        }
+
+        function formatDateShort(date) {
+            const d = new Date(date);
+            return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
         }
 
         function addBuyRecord(price, weight, feeRate) {
             const data = getData();
             const amount = price * weight;
             const fee = amount * feeRate / 100;
-            const record = {
+            data.buyRecords.push({
                 id: generateId(),
                 timestamp: new Date().toISOString(),
                 price: parseFloat(price),
@@ -1078,10 +1340,9 @@
                 feeRate: parseFloat(feeRate),
                 fee: fee,
                 remainingWeight: parseFloat(weight)
-            };
-            data.buyRecords.push(record);
+            });
             saveData(data);
-            return record;
+            return data.buyRecords[data.buyRecords.length - 1];
         }
 
         function deleteBuyRecord(id) {
@@ -1112,7 +1373,7 @@
                     remainingSell -= deduct;
                 }
             }
-            const sellRecord = {
+            data.sellRecords.push({
                 id: generateId(),
                 timestamp: new Date().toISOString(),
                 price: parseFloat(price),
@@ -1121,17 +1382,14 @@
                 feeRate: parseFloat(feeRate),
                 fee: fee,
                 costPrice: avgCostPrice
-            };
-            data.sellRecords.push(sellRecord);
+            });
             saveData(data);
-            return sellRecord;
+            return data.sellRecords[data.sellRecords.length - 1];
         }
 
         function getPortfolioStats() {
             const data = getData();
-            let totalWeight = 0;
-            let totalAmount = 0;
-            let totalFee = 0;
+            let totalWeight = 0, totalAmount = 0, totalFee = 0;
             data.buyRecords.forEach(record => {
                 if (record.remainingWeight > 0) {
                     totalWeight += record.remainingWeight;
@@ -1142,13 +1400,7 @@
             });
             const totalInvestment = totalAmount + totalFee;
             const avgCost = totalWeight > 0 ? totalInvestment / totalWeight : 0;
-            return {
-                totalWeight: totalWeight,
-                totalAmount: totalAmount,
-                totalFee: totalFee,
-                totalInvestment: totalInvestment,
-                avgCost: avgCost
-            };
+            return { totalWeight, totalAmount, totalFee, totalInvestment, avgCost };
         }
 
         function calculateBreakEvenPrice(avgCost, sellFeeRate) {
@@ -1159,30 +1411,24 @@
         // ==================== 实时金价模块 ====================
         const GOLD_API_URL = 'https://tmini.net/api/gold-price';
         let currentGoldData = null;
-        let goldPriceChart = null;
-        let currentChartMode = 'hourly';
+        let hourlyChart = null;
+        let dailyChart = null;
 
-        // 获取金价历史数据
         function getGoldPriceHistory() {
             if (!isLocalStorageAvailable()) return [];
             try {
                 const data = localStorage.getItem(GOLD_PRICE_HISTORY_KEY);
                 return data ? JSON.parse(data) : [];
-            } catch (e) {
-                return [];
-            }
+            } catch (e) { return []; }
         }
 
         function saveGoldPriceHistory(history) {
             if (!isLocalStorageAvailable()) return;
             try {
-                // 只保留最近7天的数据
                 const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
                 const filtered = history.filter(h => h.timestamp > sevenDaysAgo);
                 localStorage.setItem(GOLD_PRICE_HISTORY_KEY, JSON.stringify(filtered));
-            } catch (e) {
-                console.error('保存金价历史失败:', e);
-            }
+            } catch (e) {}
         }
 
         function getGoldPriceDaily() {
@@ -1190,23 +1436,38 @@
             try {
                 const data = localStorage.getItem(GOLD_PRICE_DAILY_KEY);
                 return data ? JSON.parse(data) : [];
-            } catch (e) {
-                return [];
-            }
+            } catch (e) { return []; }
         }
 
         function saveGoldPriceDaily(daily) {
             if (!isLocalStorageAvailable()) return;
             try {
-                // 只保留最近90天
                 const cutoff = daily.length > 90 ? daily.slice(-90) : daily;
                 localStorage.setItem(GOLD_PRICE_DAILY_KEY, JSON.stringify(cutoff));
-            } catch (e) {
-                console.error('保存每日金价失败:', e);
-            }
+            } catch (e) {}
         }
 
-        // 获取实时金价
+        // 每周更新检查
+        function checkWeeklyUpdate() {
+            const lastUpdate = localStorage.getItem(GOLD_PRICE_LAST_WEEKLY_UPDATE);
+            const now = Date.now();
+            const weekInMs = 7 * 24 * 60 * 60 * 1000;
+            if (!lastUpdate || (now - parseInt(lastUpdate)) > weekInMs) {
+                localStorage.setItem(GOLD_PRICE_LAST_WEEKLY_UPDATE, String(now));
+                // 清理超过7天的逐时数据，保留每日汇总
+                pruneOldData();
+                return true;
+            }
+            return false;
+        }
+
+        function pruneOldData() {
+            const history = getGoldPriceHistory();
+            const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            const filtered = history.filter(h => h.timestamp > sevenDaysAgo);
+            saveGoldPriceHistory(filtered);
+        }
+
         async function fetchGoldPrice() {
             const statusEl = document.getElementById('goldPriceStatus');
             statusEl.textContent = '更新中...';
@@ -1216,8 +1477,6 @@
                 const response = await fetch(GOLD_API_URL);
                 if (!response.ok) throw new Error('API请求失败');
                 const data = await response.json();
-
-                // 使用"今日金价"数据
                 const goldMetal = data.metals && data.metals.length > 0 ? data.metals[0] : null;
                 if (!goldMetal) throw new Error('未获取到金价数据');
 
@@ -1232,7 +1491,7 @@
 
                 updateGoldPriceUI();
                 recordPriceSnapshot();
-                updateChart();
+                updateCharts();
 
                 statusEl.textContent = '实时';
                 statusEl.className = 'gold-price-status';
@@ -1240,17 +1499,12 @@
                 console.error('获取金价失败:', e);
                 statusEl.textContent = '获取失败';
                 statusEl.className = 'gold-price-status error';
-
-                // 如果有缓存数据，使用缓存
-                if (currentGoldData) {
-                    updateGoldPriceUI();
-                }
+                if (currentGoldData) { updateGoldPriceUI(); }
             }
         }
 
         function updateGoldPriceUI() {
             if (!currentGoldData) return;
-
             const prevPrice = document.getElementById('goldPriceCurrent').dataset.price;
             const currentPrice = currentGoldData.todayPrice;
 
@@ -1262,7 +1516,6 @@
             document.getElementById('goldPriceOpen').textContent = currentGoldData.todayPrice.toFixed(2);
             document.getElementById('goldPriceUpdate').textContent = '更新于 ' + (currentGoldData.updated || formatTime(new Date()));
 
-            // 更新涨跌指示
             const changeEl = document.getElementById('goldPriceChange');
             if (prevPrice && parseFloat(prevPrice) > 0) {
                 const diff = currentPrice - parseFloat(prevPrice);
@@ -1274,23 +1527,15 @@
                     changeEl.style.display = 'none';
                 }
             }
-
-            // 更新自动获取按钮提示
             document.getElementById('autoPriceHint').textContent = currentGoldData.sellPrice.toFixed(2);
         }
 
-        // 记录价格快照
         function recordPriceSnapshot() {
             if (!currentGoldData) return;
-
             const history = getGoldPriceHistory();
-            const now = new Date();
-            const today = formatDate(now);
-
-            // 每小时记录一次（或首次记录）
+            const today = formatDate(new Date());
             const lastRecord = history.length > 0 ? history[history.length - 1] : null;
-            const shouldRecord = !lastRecord ||
-                (Date.now() - lastRecord.timestamp > 55 * 60 * 1000); // 约55分钟记录一次
+            const shouldRecord = !lastRecord || (Date.now() - lastRecord.timestamp > 55 * 60 * 1000);
 
             if (shouldRecord) {
                 history.push({
@@ -1301,18 +1546,14 @@
                     sell: currentGoldData.sellPrice
                 });
                 saveGoldPriceHistory(history);
-
-                // 更新每日数据
                 updateDailyRecord(today);
             }
         }
 
         function updateDailyRecord(today) {
             if (!currentGoldData) return;
-
             const daily = getGoldPriceDaily();
             const todayRecord = daily.find(d => d.date === today);
-
             if (todayRecord) {
                 todayRecord.high = Math.max(todayRecord.high, currentGoldData.highPrice);
                 todayRecord.low = Math.min(todayRecord.low, currentGoldData.lowPrice);
@@ -1326,11 +1567,9 @@
                     open: currentGoldData.todayPrice
                 });
             }
-
             saveGoldPriceDaily(daily);
         }
 
-        // 卖出时自动获取金价
         async function fetchGoldPriceForSell() {
             const btn = document.getElementById('btnAutoPrice');
             btn.classList.add('loading');
@@ -1346,8 +1585,6 @@
                     const sellPrice = parseFloat(goldMetal.sell_price);
                     document.getElementById('sellPriceInput').value = sellPrice.toFixed(2);
                     updateSellPreview();
-
-                    // 同时更新全局金价数据
                     currentGoldData = {
                         sellPrice: sellPrice,
                         todayPrice: parseFloat(goldMetal.today_price),
@@ -1358,11 +1595,9 @@
                     };
                     updateGoldPriceUI();
                     recordPriceSnapshot();
-                    updateChart();
+                    updateCharts();
                 }
             } catch (e) {
-                console.error('获取金价失败:', e);
-                // 使用缓存数据
                 if (currentGoldData) {
                     document.getElementById('sellPriceInput').value = currentGoldData.sellPrice.toFixed(2);
                     updateSellPreview();
@@ -1376,145 +1611,129 @@
             }
         }
 
-        // ==================== 图表模块 ====================
-        function initChart() {
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            goldPriceChart = new Chart(ctx, {
+        // ==================== 双图表模块 ====================
+        function createChartConfig(label, borderColor, bgColor, pointColor) {
+            return {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [{
-                        label: '金价 (元/克)',
+                        label: label,
                         data: [],
-                        borderColor: '#ffd700',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        borderColor: borderColor,
+                        backgroundColor: bgColor,
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 2,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#ffd700'
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: pointColor,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1,
+                        pointHitRadius: 20
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: { duration: 300 },
                     interaction: {
                         intersect: false,
-                        mode: 'index'
+                        mode: 'nearest'
                     },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                            backgroundColor: 'rgba(26, 26, 46, 0.95)',
                             titleColor: '#fff',
-                            bodyColor: '#ffd700',
-                            borderColor: '#ffd700',
+                            bodyColor: borderColor,
+                            borderColor: borderColor,
                             borderWidth: 1,
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 10,
+                            displayColors: false,
                             callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y.toFixed(2) + ' 元/克';
+                                label: function(ctx) {
+                                    return ctx.parsed.y.toFixed(2) + ' 元/克';
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
+                            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
                             ticks: {
                                 maxTicksLimit: 8,
-                                color: '#7f8c8d'
+                                color: '#7f8c8d',
+                                font: { size: 11 }
                             }
                         },
                         y: {
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
+                            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
                             ticks: {
                                 color: '#7f8c8d',
-                                callback: function(value) {
-                                    return value.toFixed(0);
-                                }
+                                font: { size: 11 },
+                                callback: function(v) { return v.toFixed(0); }
                             }
                         }
                     }
                 }
-            });
+            };
         }
 
-        function updateChart() {
-            if (!goldPriceChart) return;
+        function initCharts() {
+            if (hourlyChart) { hourlyChart.destroy(); }
+            if (dailyChart) { dailyChart.destroy(); }
 
-            if (currentChartMode === 'hourly') {
-                updateHourlyChart();
-            } else {
-                updateDailyChart();
-            }
+            const hCtx = document.getElementById('hourlyChart').getContext('2d');
+            hourlyChart = new Chart(hCtx, createChartConfig(
+                '当日小时金价', '#ffd700', 'rgba(255,215,0,0.08)', '#ffd700'
+            ));
+
+            const dCtx = document.getElementById('dailyChart').getContext('2d');
+            dailyChart = new Chart(dCtx, createChartConfig(
+                '近7日收盘价', '#3498db', 'rgba(52,152,219,0.08)', '#3498db'
+            ));
+        }
+
+        function updateCharts() {
+            updateHourlyChart();
+            updateDailyChart();
         }
 
         function updateHourlyChart() {
+            if (!hourlyChart) return;
             const history = getGoldPriceHistory();
             const today = formatDate(new Date());
-
-            // 筛选今日数据
             const todayData = history.filter(h => formatDate(new Date(h.timestamp)) === today);
-
-            // 如果当前有实时数据，追加当前点
             const chartData = [...todayData];
+
             if (currentGoldData && (chartData.length === 0 ||
                     currentGoldData.timestamp - chartData[chartData.length - 1].timestamp > 5 * 60 * 1000)) {
                 chartData.push({
                     timestamp: currentGoldData.timestamp,
-                    price: currentGoldData.todayPrice,
-                    high: currentGoldData.highPrice,
-                    low: currentGoldData.lowPrice
+                    price: currentGoldData.todayPrice
                 });
             }
 
-            const labels = chartData.map(d => formatTimeShort(new Date(d.timestamp)));
-            const prices = chartData.map(d => d.price);
-
-            goldPriceChart.data.labels = labels;
-            goldPriceChart.data.datasets[0].data = prices;
-            goldPriceChart.data.datasets[0].label = '金价 (元/克)';
-            goldPriceChart.data.datasets[0].borderColor = '#ffd700';
-            goldPriceChart.data.datasets[0].backgroundColor = 'rgba(255, 215, 0, 0.1)';
-            goldPriceChart.data.datasets[0].pointBackgroundColor = '#ffd700';
-            goldPriceChart.options.scales.x.ticks.maxTicksLimit = 8;
-
-            goldPriceChart.update();
+            hourlyChart.data.labels = chartData.map(d => formatTimeShort(new Date(d.timestamp)));
+            hourlyChart.data.datasets[0].data = chartData.map(d => d.price);
+            hourlyChart.update('none');
         }
 
         function updateDailyChart() {
+            if (!dailyChart) return;
             const daily = getGoldPriceDaily();
+            const sevenDays = daily.slice(-7);
 
-            const labels = daily.map(d => d.date.slice(5)); // MM-DD 格式
-            const prices = daily.map(d => d.close);
-
-            goldPriceChart.data.labels = labels;
-            goldPriceChart.data.datasets[0].data = prices;
-            goldPriceChart.data.datasets[0].label = '收盘价 (元/克)';
-            goldPriceChart.data.datasets[0].borderColor = '#3498db';
-            goldPriceChart.data.datasets[0].backgroundColor = 'rgba(52, 152, 219, 0.1)';
-            goldPriceChart.data.datasets[0].pointBackgroundColor = '#3498db';
-            goldPriceChart.options.scales.x.ticks.maxTicksLimit = 10;
-
-            goldPriceChart.update();
-        }
-
-        // 图表切换
-        document.querySelectorAll('.chart-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                currentChartMode = this.dataset.chart;
-                updateChart();
+            dailyChart.data.labels = sevenDays.map(d => {
+                const parts = d.date.split('-');
+                return parts[1] + '/' + parts[2];
             });
-        });
+            dailyChart.data.datasets[0].data = sevenDays.map(d => d.close);
+            dailyChart.update('none');
+        }
 
         // ==================== 买入功能 ====================
         const buyPriceInput = document.getElementById('buyPriceInput');
@@ -1558,8 +1777,7 @@
             document.getElementById('statTotalWeight').textContent = stats.totalWeight.toFixed(4) + ' 克';
             document.getElementById('statTotalInvestment').textContent = stats.totalInvestment.toFixed(2) + ' 元';
             document.getElementById('statAvgCost').textContent = stats.avgCost.toFixed(2) + ' 元/克';
-            const breakEvenPrice = calculateBreakEvenPrice(stats.avgCost, sellFeeRate);
-            document.getElementById('breakEvenPrice').textContent = breakEvenPrice.toFixed(2);
+            document.getElementById('breakEvenPrice').textContent = calculateBreakEvenPrice(stats.avgCost, sellFeeRate).toFixed(2);
 
             const tbody = document.getElementById('buyRecordsBody');
             const tfoot = document.getElementById('buyRecordsFoot');
@@ -1573,41 +1791,50 @@
             } else {
                 emptyTip.style.display = 'none';
                 document.querySelector('#buyRecordsTable').parentElement.style.display = 'block';
-                let totalWeight = 0,
-                    totalAmount = 0,
-                    totalFee = 0,
-                    totalRemaining = 0;
-                tbody.innerHTML = data.buyRecords.map(record => {
+                let totalWeight = 0, totalAmount = 0, totalFee = 0, totalRemaining = 0;
+                const fragment = document.createDocumentFragment();
+                const tempTbody = document.createElement('tbody');
+
+                data.buyRecords.forEach(record => {
                     totalWeight += record.weight;
                     totalAmount += record.amount;
                     totalFee += record.fee;
                     totalRemaining += record.remainingWeight;
-                    return `
-                        <tr>
-                            <td>${formatTime(record.timestamp)}</td>
-                            <td>${record.price.toFixed(2)}</td>
-                            <td>${record.weight.toFixed(4)}</td>
-                            <td>${record.amount.toFixed(2)}</td>
-                            <td>${record.fee.toFixed(2)}</td>
-                            <td>${record.remainingWeight.toFixed(4)}</td>
-                            <td><button class="btn-delete" onclick="handleDeleteBuy('${record.id}')">删除</button></td>
-                        </tr>
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${formatTime(record.timestamp)}</td>
+                        <td>${record.price.toFixed(2)}</td>
+                        <td>${record.weight.toFixed(4)}</td>
+                        <td>${record.amount.toFixed(2)}</td>
+                        <td>${record.fee.toFixed(2)}</td>
+                        <td>${record.remainingWeight.toFixed(4)}</td>
+                        <td><button class="btn-delete" data-id="${record.id}">删除</button></td>
                     `;
-                }).join('');
+                    tempTbody.appendChild(tr);
+                });
+
+                tbody.innerHTML = '';
+                while (tempTbody.firstChild) {
+                    tbody.appendChild(tempTbody.firstChild);
+                }
+
+                // 事件委托
+                tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        handleDeleteBuy(this.dataset.id);
+                    });
+                });
+
                 tfoot.innerHTML = `
                     <tr>
-                        <td><b>合计</b></td>
-                        <td>-</td>
+                        <td><b>合计</b></td><td>-</td>
                         <td><b>${totalWeight.toFixed(4)}</b></td>
                         <td><b>${totalAmount.toFixed(2)}</b></td>
                         <td><b>${totalFee.toFixed(2)}</b></td>
                         <td><b>${totalRemaining.toFixed(4)}</b></td>
                         <td></td>
-                    </tr>
-                `;
+                    </tr>`;
             }
-
-            // 刷新收益记录
             filterProfitRecords();
         }
 
@@ -1660,8 +1887,7 @@
                 sellWeight = price > 0 ? sellAmount / price : 0;
             }
             const sellFee = sellAmount * feeRate / 100;
-            const costBasis = sellWeight * stats.avgCost;
-            const netProfit = sellAmount - sellFee - costBasis;
+            const netProfit = sellAmount - sellFee - sellWeight * stats.avgCost;
             document.getElementById('previewSellAmount').textContent = sellAmount.toFixed(2) + ' 元';
             document.getElementById('previewSellFee').textContent = sellFee.toFixed(2) + ' 元';
             const netProfitEl = document.getElementById('previewNetProfit');
@@ -1683,12 +1909,7 @@
                 alert('请输入有效的卖出价格和数量！');
                 return;
             }
-            let sellWeight;
-            if (sellType === 'weight') {
-                sellWeight = quantity;
-            } else {
-                sellWeight = price > 0 ? quantity / price : 0;
-            }
+            let sellWeight = sellType === 'weight' ? quantity : (price > 0 ? quantity / price : 0);
             if (sellWeight > stats.totalWeight) {
                 alert(`卖出数量超出持仓！当前持仓：${stats.totalWeight.toFixed(4)} 克`);
                 return;
@@ -1711,21 +1932,12 @@
         let profitRenderTimer = null;
 
         function calculateSellProfitData() {
-            const data = getData();
-            const sellRecords = data.sellRecords || [];
-            return sellRecords.map(record => {
+            return (getData().sellRecords || []).map(record => {
                 const costPrice = record.costPrice || 0;
-                const sellAmount = record.amount;
-                const sellFee = record.fee;
                 const costBasis = record.weight * costPrice;
-                const profit = sellAmount - sellFee - costBasis;
+                const profit = record.amount - record.fee - costBasis;
                 const rate = costBasis > 0 ? (profit / costBasis) * 100 : 0;
-                return {
-                    ...record,
-                    costPrice: costPrice,
-                    profit: profit,
-                    rate: rate
-                };
+                return { ...record, costPrice, profit, rate };
             });
         }
 
@@ -1733,22 +1945,19 @@
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             switch (filterType) {
-                case 'today':
-                    return { start: today, end: now };
+                case 'today': return { start: today, end: now };
                 case 'week':
-                    const weekStart = new Date(today);
-                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                    return { start: weekStart, end: now };
+                    const ws = new Date(today);
+                    ws.setDate(ws.getDate() - ws.getDay());
+                    return { start: ws, end: now };
                 case 'month':
-                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    return { start: monthStart, end: now };
+                    return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: now };
                 case 'custom':
-                    const startDate = document.getElementById('startDateInput').value;
-                    const endDate = document.getElementById('endDateInput').value;
-                    if (!startDate || !endDate) return null;
-                    return { start: new Date(startDate), end: new Date(endDate + 'T23:59:59') };
-                default:
-                    return null;
+                    const sd = document.getElementById('startDateInput').value;
+                    const ed = document.getElementById('endDateInput').value;
+                    if (!sd || !ed) return null;
+                    return { start: new Date(sd), end: new Date(ed + 'T23:59:59') };
+                default: return null;
             }
         }
 
@@ -1756,30 +1965,22 @@
             if (profitRenderTimer) clearTimeout(profitRenderTimer);
             showProfitLoading();
             profitRenderTimer = setTimeout(() => {
-                requestAnimationFrame(() => {
-                    performFilterAndRender();
-                });
-            }, 100);
+                requestAnimationFrame(() => performFilterAndRender());
+            }, 80);
         }
 
         function showProfitLoading() {
-            const tbody = document.getElementById('profitRecordsBody');
-            const tfoot = document.getElementById('profitRecordsFoot');
-            tbody.innerHTML = '<tr><td colspan="8" style="color:#999;padding:20px;">加载中...</td></tr>';
-            tfoot.innerHTML = '';
+            document.getElementById('profitRecordsBody').innerHTML =
+                '<tr><td colspan="8" style="color:#999;padding:20px;">加载中...</td></tr>';
+            document.getElementById('profitRecordsFoot').innerHTML = '';
         }
 
         function performFilterAndRender() {
             const allRecords = calculateSellProfitData();
             const range = getProfitTimeRange(profitCurrentFilter);
-            if (range) {
-                profitFilteredRecords = allRecords.filter(record => {
-                    const recordDate = new Date(record.timestamp);
-                    return recordDate >= range.start && recordDate <= range.end;
-                });
-            } else {
-                profitFilteredRecords = [...allRecords];
-            }
+            profitFilteredRecords = range
+                ? allRecords.filter(r => { const d = new Date(r.timestamp); return d >= range.start && d <= range.end; })
+                : [...allRecords];
             sortProfitRecords();
             profitCurrentPage = 1;
             profitSummaryCache = calculateProfitSummary();
@@ -1788,47 +1989,27 @@
         }
 
         function calculateProfitSummary() {
-            if (profitFilteredRecords.length === 0) {
-                return { count: 0, totalAmount: 0, totalProfit: 0, avgRate: 0 };
-            }
-            let totalAmount = 0;
-            let totalProfit = 0;
-            let totalRate = 0;
+            if (profitFilteredRecords.length === 0) return { count: 0, totalAmount: 0, totalProfit: 0, avgRate: 0 };
+            let totalAmount = 0, totalProfit = 0, totalRate = 0;
             for (let i = 0; i < profitFilteredRecords.length; i++) {
-                const record = profitFilteredRecords[i];
-                totalAmount += record.amount;
-                totalProfit += record.profit;
-                totalRate += record.rate;
+                totalAmount += profitFilteredRecords[i].amount;
+                totalProfit += profitFilteredRecords[i].profit;
+                totalRate += profitFilteredRecords[i].rate;
             }
-            return {
-                count: profitFilteredRecords.length,
-                totalAmount: totalAmount,
-                totalProfit: totalProfit,
-                avgRate: totalRate / profitFilteredRecords.length
-            };
+            return { count: profitFilteredRecords.length, totalAmount, totalProfit, avgRate: totalRate / profitFilteredRecords.length };
         }
 
         function sortProfitRecords() {
             const [field, direction] = profitCurrentSort.split('-');
             profitFilteredRecords.sort((a, b) => {
-                let valueA, valueB;
+                let va, vb;
                 switch (field) {
-                    case 'time':
-                        valueA = new Date(a.timestamp).getTime();
-                        valueB = new Date(b.timestamp).getTime();
-                        break;
-                    case 'profit':
-                        valueA = a.profit;
-                        valueB = b.profit;
-                        break;
-                    case 'rate':
-                        valueA = a.rate;
-                        valueB = b.rate;
-                        break;
-                    default:
-                        return 0;
+                    case 'time': va = new Date(a.timestamp).getTime(); vb = new Date(b.timestamp).getTime(); break;
+                    case 'profit': va = a.profit; vb = b.profit; break;
+                    case 'rate': va = a.rate; vb = b.rate; break;
+                    default: return 0;
                 }
-                return direction === 'desc' ? valueB - valueA : valueA - valueB;
+                return direction === 'desc' ? vb - va : va - vb;
             });
         }
 
@@ -1839,75 +2020,41 @@
             const tableContainer = document.getElementById('profitTableContainer');
 
             if (profitFilteredRecords.length === 0) {
-                tbody.innerHTML = '';
-                tfoot.innerHTML = '';
-                emptyTip.style.display = 'block';
-                tableContainer.style.display = 'none';
+                tbody.innerHTML = ''; tfoot.innerHTML = '';
+                emptyTip.style.display = 'block'; tableContainer.style.display = 'none';
                 document.getElementById('profitPagination').innerHTML = '';
                 return;
             }
 
-            emptyTip.style.display = 'none';
-            tableContainer.style.display = 'block';
-
+            emptyTip.style.display = 'none'; tableContainer.style.display = 'block';
             const totalPages = Math.ceil(profitFilteredRecords.length / profitPageSize);
-            const startIndex = (profitCurrentPage - 1) * profitPageSize;
-            const endIndex = Math.min(startIndex + profitPageSize, profitFilteredRecords.length);
+            const si = (profitCurrentPage - 1) * profitPageSize;
+            const ei = Math.min(si + profitPageSize, profitFilteredRecords.length);
 
+            let tw = 0, ta = 0, tf = 0, tp = 0;
             const fragment = document.createDocumentFragment();
-            let totalWeight = 0,
-                totalAmount = 0,
-                totalFee = 0,
-                totalProfit = 0;
 
-            for (let i = startIndex; i < endIndex; i++) {
-                const record = profitFilteredRecords[i];
-                totalWeight += record.weight;
-                totalAmount += record.amount;
-                totalFee += record.fee;
-                totalProfit += record.profit;
-
+            for (let i = si; i < ei; i++) {
+                const r = profitFilteredRecords[i];
+                tw += r.weight; ta += r.amount; tf += r.fee; tp += r.profit;
                 const tr = document.createElement('tr');
-                const profitClass = record.profit >= 0 ? 'profit-amount' : 'loss-amount';
-                const rateClass = record.rate >= 0 ? 'profit-rate' : 'loss-rate';
-                const profitSign = record.profit >= 0 ? '+' : '';
-                const rateSign = record.rate >= 0 ? '+' : '';
-
-                tr.innerHTML = `
-                    <td>${formatTime(record.timestamp)}</td>
-                    <td>${record.price.toFixed(2)}</td>
-                    <td>${record.costPrice.toFixed(2)}</td>
-                    <td>${record.weight.toFixed(4)}</td>
-                    <td>${record.amount.toFixed(2)}</td>
-                    <td>${record.fee.toFixed(2)}</td>
-                    <td class="${profitClass}">${profitSign}${record.profit.toFixed(2)}</td>
-                    <td><span class="${rateClass}">${rateSign}${record.rate.toFixed(2)}%</span></td>
-                `;
+                const pc = r.profit >= 0 ? 'profit-amount' : 'loss-amount';
+                const rc = r.rate >= 0 ? 'profit-rate' : 'loss-rate';
+                const ps = r.profit >= 0 ? '+' : '';
+                const rs = r.rate >= 0 ? '+' : '';
+                tr.innerHTML = `<td>${formatTime(r.timestamp)}</td><td>${r.price.toFixed(2)}</td><td>${r.costPrice.toFixed(2)}</td><td>${r.weight.toFixed(4)}</td><td>${r.amount.toFixed(2)}</td><td>${r.fee.toFixed(2)}</td><td class="${pc}">${ps}${r.profit.toFixed(2)}</td><td><span class="${rc}">${rs}${r.rate.toFixed(2)}%</span></td>`;
                 fragment.appendChild(tr);
             }
-
             tbody.innerHTML = '';
             tbody.appendChild(fragment);
 
-            const avgRate = totalAmount > 0 ? (totalProfit / (totalAmount - totalFee)) * 100 : 0;
-            const avgRateClass = avgRate >= 0 ? 'profit-rate' : 'loss-rate';
-            const avgRateSign = avgRate >= 0 ? '+' : '';
-            const totalProfitClass = totalProfit >= 0 ? 'profit-amount' : 'loss-amount';
-            const totalProfitSign = totalProfit >= 0 ? '+' : '';
+            const avgRate = ta > 0 ? (tp / (ta - tf)) * 100 : 0;
+            const arc = avgRate >= 0 ? 'profit-rate' : 'loss-rate';
+            const ars = avgRate >= 0 ? '+' : '';
+            const tpc = tp >= 0 ? 'profit-amount' : 'loss-amount';
+            const tps = tp >= 0 ? '+' : '';
 
-            tfoot.innerHTML = `
-                <tr>
-                    <td><b>合计</b></td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td><b>${totalWeight.toFixed(4)}</b></td>
-                    <td><b>${totalAmount.toFixed(2)}</b></td>
-                    <td><b>${totalFee.toFixed(2)}</b></td>
-                    <td class="${totalProfitClass}"><b>${totalProfitSign}${totalProfit.toFixed(2)}</b></td>
-                    <td><span class="${avgRateClass}"><b>${avgRateSign}${avgRate.toFixed(2)}%</b></span></td>
-                </tr>
-            `;
-
+            tfoot.innerHTML = `<tr><td><b>合计</b></td><td>-</td><td>-</td><td><b>${tw.toFixed(4)}</b></td><td><b>${ta.toFixed(2)}</b></td><td><b>${tf.toFixed(2)}</b></td><td class="${tpc}"><b>${tps}${tp.toFixed(2)}</b></td><td><span class="${arc}"><b>${ars}${avgRate.toFixed(2)}%</b></span></td></tr>`;
             renderProfitPagination(totalPages);
         }
 
@@ -1917,109 +2064,77 @@
                 pagination.innerHTML = `<span class="page-info">共 ${profitFilteredRecords.length} 条记录</span>`;
                 return;
             }
+            const f = document.createDocumentFragment();
+            const c = document.createElement('div');
+            c.style.cssText = 'display:flex;justify-content:center;gap:6px;align-items:center;flex-wrap:wrap;';
 
-            const fragment = document.createDocumentFragment();
-            const container = document.createElement('div');
-            container.style.display = 'flex';
-            container.style.justifyContent = 'center';
-            container.style.gap = '8px';
-            container.style.alignItems = 'center';
+            const prev = document.createElement('button');
+            prev.className = 'page-btn' + (profitCurrentPage === 1 ? ' disabled' : '');
+            prev.textContent = '上一页';
+            prev.disabled = profitCurrentPage === 1;
+            if (profitCurrentPage > 1) prev.onclick = () => goToProfitPage(profitCurrentPage - 1);
+            c.appendChild(prev);
 
-            const prevBtn = document.createElement('button');
-            prevBtn.className = `page-btn ${profitCurrentPage === 1 ? 'disabled' : ''}`;
-            prevBtn.textContent = '上一页';
-            prevBtn.disabled = profitCurrentPage === 1;
-            if (profitCurrentPage > 1) {
-                prevBtn.onclick = () => goToProfitPage(profitCurrentPage - 1);
+            const mv = 5;
+            let sp = Math.max(1, profitCurrentPage - Math.floor(mv / 2));
+            let ep = Math.min(totalPages, sp + mv - 1);
+            if (ep - sp < mv - 1) sp = Math.max(1, ep - mv + 1);
+
+            if (sp > 1) {
+                const fb = document.createElement('button');
+                fb.className = 'page-btn'; fb.textContent = '1';
+                fb.onclick = () => goToProfitPage(1);
+                c.appendChild(fb);
+                if (sp > 2) { const e = document.createElement('span'); e.textContent = '...'; e.style.color = '#7f8c8d'; c.appendChild(e); }
             }
-            container.appendChild(prevBtn);
-
-            const maxVisiblePages = 5;
-            let startPage = Math.max(1, profitCurrentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            if (endPage - startPage < maxVisiblePages - 1) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            for (let i = sp; i <= ep; i++) {
+                const pb = document.createElement('button');
+                pb.className = 'page-btn' + (i === profitCurrentPage ? ' active' : '');
+                pb.textContent = i;
+                if (i !== profitCurrentPage) pb.onclick = () => goToProfitPage(i);
+                c.appendChild(pb);
             }
-
-            if (startPage > 1) {
-                const firstBtn = document.createElement('button');
-                firstBtn.className = 'page-btn';
-                firstBtn.textContent = '1';
-                firstBtn.onclick = () => goToProfitPage(1);
-                container.appendChild(firstBtn);
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.style.color = '#7f8c8d';
-                    container.appendChild(ellipsis);
-                }
+            if (ep < totalPages) {
+                if (ep < totalPages - 1) { const e = document.createElement('span'); e.textContent = '...'; e.style.color = '#7f8c8d'; c.appendChild(e); }
+                const lb = document.createElement('button');
+                lb.className = 'page-btn'; lb.textContent = totalPages;
+                lb.onclick = () => goToProfitPage(totalPages);
+                c.appendChild(lb);
             }
+            const pi = document.createElement('span');
+            pi.className = 'page-info'; pi.textContent = `共 ${profitFilteredRecords.length} 条`;
+            c.appendChild(pi);
 
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = `page-btn ${i === profitCurrentPage ? 'active' : ''}`;
-                pageBtn.textContent = i;
-                if (i !== profitCurrentPage) {
-                    pageBtn.onclick = () => goToProfitPage(i);
-                }
-                container.appendChild(pageBtn);
-            }
+            const next = document.createElement('button');
+            next.className = 'page-btn' + (profitCurrentPage === totalPages ? ' disabled' : '');
+            next.textContent = '下一页';
+            next.disabled = profitCurrentPage === totalPages;
+            if (profitCurrentPage < totalPages) next.onclick = () => goToProfitPage(profitCurrentPage + 1);
+            c.appendChild(next);
 
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.style.color = '#7f8c8d';
-                    container.appendChild(ellipsis);
-                }
-                const lastBtn = document.createElement('button');
-                lastBtn.className = 'page-btn';
-                lastBtn.textContent = totalPages;
-                lastBtn.onclick = () => goToProfitPage(totalPages);
-                container.appendChild(lastBtn);
-            }
-
-            const pageInfo = document.createElement('span');
-            pageInfo.className = 'page-info';
-            pageInfo.textContent = `共 ${profitFilteredRecords.length} 条记录`;
-            container.appendChild(pageInfo);
-
-            const nextBtn = document.createElement('button');
-            nextBtn.className = `page-btn ${profitCurrentPage === totalPages ? 'disabled' : ''}`;
-            nextBtn.textContent = '下一页';
-            nextBtn.disabled = profitCurrentPage === totalPages;
-            if (profitCurrentPage < totalPages) {
-                nextBtn.onclick = () => goToProfitPage(profitCurrentPage + 1);
-            }
-            container.appendChild(nextBtn);
-
-            fragment.appendChild(container);
+            f.appendChild(c);
             pagination.innerHTML = '';
-            pagination.appendChild(fragment);
+            pagination.appendChild(f);
         }
 
         function goToProfitPage(page) {
             profitCurrentPage = page;
-            requestAnimationFrame(() => {
-                renderProfitRecords();
-            });
+            requestAnimationFrame(() => renderProfitRecords());
         }
 
         function renderProfitSummary() {
-            const summary = profitSummaryCache || calculateProfitSummary();
-            document.getElementById('profitSummaryCount').textContent = summary.count + ' 次';
-            document.getElementById('profitSummaryAmount').textContent = summary.totalAmount.toFixed(2) + ' 元';
-
-            const profitEl = document.getElementById('profitSummaryProfit');
-            profitEl.textContent = (summary.totalProfit >= 0 ? '+' : '') + summary.totalProfit.toFixed(2) + ' 元';
-            profitEl.className = 'profit-summary-value ' + (summary.totalProfit >= 0 ? 'profit' : 'loss');
-
-            const rateEl = document.getElementById('profitSummaryRate');
-            rateEl.textContent = (summary.avgRate >= 0 ? '+' : '') + summary.avgRate.toFixed(2) + '%';
-            rateEl.className = 'profit-summary-value ' + (summary.avgRate >= 0 ? 'profit' : 'loss');
+            const s = profitSummaryCache || calculateProfitSummary();
+            document.getElementById('profitSummaryCount').textContent = s.count + ' 次';
+            document.getElementById('profitSummaryAmount').textContent = s.totalAmount.toFixed(2) + ' 元';
+            const pe = document.getElementById('profitSummaryProfit');
+            pe.textContent = (s.totalProfit >= 0 ? '+' : '') + s.totalProfit.toFixed(2) + ' 元';
+            pe.className = 'profit-summary-value ' + (s.totalProfit >= 0 ? 'profit' : 'loss');
+            const re = document.getElementById('profitSummaryRate');
+            re.textContent = (s.avgRate >= 0 ? '+' : '') + s.avgRate.toFixed(2) + '%';
+            re.className = 'profit-summary-value ' + (s.avgRate >= 0 ? 'profit' : 'loss');
         }
 
-        // 筛选按钮事件
+        // 筛选与排序事件
         document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
@@ -2031,16 +2146,10 @@
         });
 
         document.getElementById('customFilterBtn').addEventListener('click', function() {
-            const startDate = document.getElementById('startDateInput').value;
-            const endDate = document.getElementById('endDateInput').value;
-            if (!startDate || !endDate) {
-                alert('请选择开始日期和结束日期！');
-                return;
-            }
-            if (new Date(startDate) > new Date(endDate)) {
-                alert('开始日期不能大于结束日期！');
-                return;
-            }
+            const sd = document.getElementById('startDateInput').value;
+            const ed = document.getElementById('endDateInput').value;
+            if (!sd || !ed) { alert('请选择开始日期和结束日期！'); return; }
+            if (new Date(sd) > new Date(ed)) { alert('开始日期不能大于结束日期！'); return; }
             document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             profitCurrentFilter = 'custom';
@@ -2056,7 +2165,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             refreshPortfolio();
             filterProfitRecords();
-            initChart();
+            initCharts();
+
+            // 检查每周更新
+            checkWeeklyUpdate();
 
             // 首次获取金价
             fetchGoldPrice();
