@@ -1678,6 +1678,7 @@
 
         async function fetchGoldPrice() {
             const statusEl = document.getElementById('goldPriceStatus');
+            if (!statusEl) return;
             statusEl.textContent = '更新中...';
             statusEl.className = 'gold-price-status';
 
@@ -1784,6 +1785,7 @@
 
         async function fetchGoldPriceForSell() {
             const btn = document.getElementById('btnAutoPrice');
+            if (!btn) return;
             btn.classList.add('loading');
             btn.textContent = '获取中...';
 
@@ -1971,7 +1973,7 @@
 
                 // 1.5秒后恢复默认状态
                 setTimeout(() => {
-                    btn.classList.remove('success');
+                    btn?.classList.remove('success');
                 }, 1500);
 
             } catch (e) {
@@ -1995,7 +1997,7 @@
 
                 // 2秒后恢复默认状态
                 setTimeout(() => {
-                    btn.classList.remove('error');
+                    btn?.classList.remove('error');
                 }, 2000);
             }
         }
