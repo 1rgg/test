@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>积存金持仓管理系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -15,7 +17,7 @@
         body {
             background-color: #f5f7fa;
             padding: 20px;
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
@@ -75,7 +77,192 @@
             background-color: #219653;
         }
 
-        /* 持仓管理样式 */
+        /* ========== 实时金价卡片 ========== */
+        .gold-price-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gold-price-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .gold-price-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .gold-price-header .card-title {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gold-price-status {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .gold-price-status.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .gold-price-main {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .gold-price-current {
+            font-size: 42px;
+            font-weight: bold;
+            color: #ffd700;
+            line-height: 1;
+        }
+
+        .gold-price-unit {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .gold-price-change {
+            font-size: 14px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .gold-price-change.up {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .gold-price-change.down {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .gold-price-info {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .gold-price-info-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .gold-price-info-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 4px;
+        }
+
+        .gold-price-info-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .gold-price-info-value.high {
+            color: #e74c3c;
+        }
+
+        .gold-price-info-value.low {
+            color: #2ecc71;
+        }
+
+        .gold-price-update {
+            text-align: right;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========== 图表区域 ========== */
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-card .card-title {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .chart-tab {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chart-tab:hover {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .chart-tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        /* ========== 持仓统计卡片 ========== */
         .stats-card {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
             color: white;
@@ -115,7 +302,7 @@
         .break-even-box {
             margin-top: 15px;
             padding: 12px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             text-align: center;
             font-size: 16px;
@@ -126,7 +313,7 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .card-title {
@@ -177,11 +364,53 @@
             background-color: #c0392b;
         }
 
+        /* ========== 自动获取金价按钮 ========== */
+        .price-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .price-input-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .btn-auto-price {
+            padding: 12px 12px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            height: 46px;
+        }
+
+        .btn-auto-price:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+
+        .btn-auto-price.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-auto-price .price-hint {
+            font-size: 10px;
+            opacity: 0.8;
+            display: block;
+        }
+
+        /* ========== 记录卡片 ========== */
         .record-card {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
         }
 
         .record-header {
@@ -270,14 +499,13 @@
             color: #27ae60;
         }
 
-        /* 卖出收益记录样式 */
+        /* ========== 卖出收益记录样式 ========== */
         .profit-summary-card {
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            margin-top: 30px;
         }
 
         .profit-summary-card .card-title {
@@ -316,30 +544,29 @@
             color: #e74c3c;
         }
 
-        .filter-card {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        /* ========== 筛选区域（整合到收益记录中） ========== */
+        .filter-bar {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
         }
 
         .filter-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
         .filter-btn {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             background: white;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -356,10 +583,11 @@
         }
 
         .date-input {
-            padding: 6px 10px;
+            padding: 5px 8px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
+            width: 120px;
         }
 
         .date-input:focus {
@@ -369,17 +597,24 @@
 
         .sort-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
+            margin-left: auto;
         }
 
         .sort-select {
-            padding: 6px 10px;
+            padding: 5px 8px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             background: white;
             cursor: pointer;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            white-space: nowrap;
         }
 
         .profit-amount {
@@ -459,20 +694,72 @@
             .profit-summary-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .filter-card {
+            .gold-price-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .filter-bar {
                 flex-direction: column;
                 align-items: stretch;
+            }
+            .sort-group {
+                margin-left: 0;
+            }
+            .chart-container {
+                height: 200px;
             }
         }
     </style>
 </head>
 <body>
     <div class="calculator-box">
-        <h2 class="title">💰 积存金持仓管理系统</h2>
+        <h2 class="title">积存金持仓管理系统</h2>
 
-        <!-- 持仓统计卡片 -->
+        <!-- ========== 实时金价卡片 ========== -->
+        <div class="gold-price-card" id="goldPriceCard">
+            <div class="gold-price-header">
+                <span class="card-title">实时金价</span>
+                <span class="gold-price-status" id="goldPriceStatus">加载中...</span>
+            </div>
+            <div class="gold-price-main">
+                <span class="gold-price-current" id="goldPriceCurrent">--</span>
+                <span class="gold-price-unit">元/克</span>
+                <span class="gold-price-change" id="goldPriceChange" style="display:none;"></span>
+            </div>
+            <div class="gold-price-info">
+                <div class="gold-price-info-item">
+                    <div class="gold-price-info-label">卖出价</div>
+                    <div class="gold-price-info-value" id="goldPriceSell">--</div>
+                </div>
+                <div class="gold-price-info-item">
+                    <div class="gold-price-info-label">今日最高</div>
+                    <div class="gold-price-info-value high" id="goldPriceHigh">--</div>
+                </div>
+                <div class="gold-price-info-item">
+                    <div class="gold-price-info-label">今日最低</div>
+                    <div class="gold-price-info-value low" id="goldPriceLow">--</div>
+                </div>
+                <div class="gold-price-info-item">
+                    <div class="gold-price-info-label">开盘价</div>
+                    <div class="gold-price-info-value" id="goldPriceOpen">--</div>
+                </div>
+            </div>
+            <div class="gold-price-update" id="goldPriceUpdate">--</div>
+        </div>
+
+        <!-- ========== 金价走势图表 ========== -->
+        <div class="chart-card">
+            <div class="chart-tabs">
+                <button class="chart-tab active" data-chart="hourly">日内走势</button>
+                <button class="chart-tab" data-chart="daily">历史走势</button>
+            </div>
+            <div class="chart-container" id="chartContainer">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ========== 持仓统计卡片 ========== -->
         <div class="stats-card" id="statsCard">
-            <h3 class="card-title">📊 持仓统计</h3>
+            <h3 class="card-title">持仓统计</h3>
             <div class="stats-grid">
                 <div class="stat-item">
                     <span class="stat-label">总持仓克数</span>
@@ -488,13 +775,13 @@
                 </div>
             </div>
             <div class="break-even-box" id="breakEvenBox">
-                ✅ 保本卖出价：<span id="breakEvenPrice">0.00</span> 元/克
+                保本卖出价：<span id="breakEvenPrice">0.00</span> 元/克
             </div>
         </div>
 
-        <!-- 新增买入表单 -->
+        <!-- ========== 新增买入表单 ========== -->
         <div class="form-card">
-            <h3 class="card-title">📥 新增买入</h3>
+            <h3 class="card-title">新增买入</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label>买入价格（元/克）</label>
@@ -526,9 +813,9 @@
             </div>
         </div>
 
-        <!-- 卖出操作表单 -->
+        <!-- ========== 卖出操作表单 ========== -->
         <div class="form-card">
-            <h3 class="card-title">💰 卖出操作</h3>
+            <h3 class="card-title">卖出操作</h3>
             <div class="sell-type-group">
                 <label class="radio-label">
                     <input type="radio" name="sellType" value="weight" checked> 按克数
@@ -540,7 +827,13 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>卖出价格（元/克）</label>
-                    <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01">
+                    <div class="price-input-row">
+                        <input type="number" id="sellPriceInput" placeholder="请输入卖出单价" step="0.01" style="flex:1;">
+                        <button class="btn-auto-price" id="btnAutoPrice" onclick="fetchGoldPriceForSell()" title="自动获取实时金价">
+                            获取实时价
+                            <span class="price-hint" id="autoPriceHint"></span>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label id="sellQuantityLabel">卖出克数（克）</label>
@@ -574,10 +867,10 @@
             </div>
         </div>
 
-        <!-- 买入记录列表 -->
+        <!-- ========== 买入记录列表 ========== -->
         <div class="record-card">
             <div class="record-header">
-                <h3 class="card-title">📋 买入记录</h3>
+                <h3 class="card-title">买入记录</h3>
                 <button class="btn-clear" onclick="handleClearAll()">清空全部</button>
             </div>
             <div class="table-container">
@@ -593,20 +886,16 @@
                             <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody id="buyRecordsBody">
-                        <!-- 动态生成 -->
-                    </tbody>
-                    <tfoot id="buyRecordsFoot">
-                        <!-- 动态生成汇总 -->
-                    </tfoot>
+                    <tbody id="buyRecordsBody"></tbody>
+                    <tfoot id="buyRecordsFoot"></tfoot>
                 </table>
             </div>
             <div class="empty-tip" id="emptyTip">暂无买入记录</div>
         </div>
 
-        <!-- 卖出收益记录模块 -->
+        <!-- ========== 卖出收益汇总 ========== -->
         <div class="profit-summary-card" id="profitSummaryCard">
-            <h3 class="card-title">📈 卖出收益汇总</h3>
+            <h3 class="card-title">卖出收益汇总</h3>
             <div class="profit-summary-grid">
                 <div class="profit-summary-item">
                     <span class="profit-summary-label">累计卖出次数</span>
@@ -627,35 +916,35 @@
             </div>
         </div>
 
-        <!-- 筛选和排序区域 -->
-        <div class="filter-card">
-            <div class="filter-group">
-                <span class="filter-label">时间：</span>
-                <button class="filter-btn active" data-filter="all">全部</button>
-                <button class="filter-btn" data-filter="today">今日</button>
-                <button class="filter-btn" data-filter="week">本周</button>
-                <button class="filter-btn" data-filter="month">本月</button>
-                <input type="date" class="date-input" id="startDateInput" placeholder="开始日期">
-                <input type="date" class="date-input" id="endDateInput" placeholder="结束日期">
-                <button class="filter-btn" id="customFilterBtn">筛选</button>
-            </div>
-            <div class="sort-group">
-                <span class="filter-label">排序：</span>
-                <select class="sort-select" id="sortSelect">
-                    <option value="time-desc">时间 ↓</option>
-                    <option value="time-asc">时间 ↑</option>
-                    <option value="profit-desc">收益 ↓</option>
-                    <option value="profit-asc">收益 ↑</option>
-                    <option value="rate-desc">收益率 ↓</option>
-                    <option value="rate-asc">收益率 ↑</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 收益记录表格 -->
+        <!-- ========== 收益明细（含筛选） ========== -->
         <div class="record-card">
             <div class="record-header">
-                <h3 class="card-title">📋 收益明细</h3>
+                <h3 class="card-title">收益明细</h3>
+            </div>
+            <!-- 筛选和排序区域（整合到收益明细中） -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">时间：</span>
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="today">今日</button>
+                    <button class="filter-btn" data-filter="week">本周</button>
+                    <button class="filter-btn" data-filter="month">本月</button>
+                    <input type="date" class="date-input" id="startDateInput">
+                    <span class="filter-label">至</span>
+                    <input type="date" class="date-input" id="endDateInput">
+                    <button class="filter-btn" id="customFilterBtn">筛选</button>
+                </div>
+                <div class="sort-group">
+                    <span class="filter-label">排序：</span>
+                    <select class="sort-select" id="sortSelect">
+                        <option value="time-desc">时间 ↓</option>
+                        <option value="time-asc">时间 ↑</option>
+                        <option value="profit-desc">收益 ↓</option>
+                        <option value="profit-asc">收益 ↑</option>
+                        <option value="rate-desc">收益率 ↓</option>
+                        <option value="rate-asc">收益率 ↑</option>
+                    </select>
+                </div>
             </div>
             <div class="table-container" id="profitTableContainer">
                 <table class="record-table">
@@ -671,27 +960,22 @@
                             <th>收益率</th>
                         </tr>
                     </thead>
-                    <tbody id="profitRecordsBody">
-                        <!-- 动态生成 -->
-                    </tbody>
-                    <tfoot id="profitRecordsFoot">
-                        <!-- 动态生成汇总 -->
-                    </tfoot>
+                    <tbody id="profitRecordsBody"></tbody>
+                    <tfoot id="profitRecordsFoot"></tfoot>
                 </table>
             </div>
             <div class="empty-tip" id="profitEmptyTip">暂无卖出记录</div>
-            <div class="pagination" id="profitPagination">
-                <!-- 动态生成 -->
-            </div>
+            <div class="pagination" id="profitPagination"></div>
         </div>
     </div>
 
     <script>
         // ==================== 数据存储模块 ====================
         const STORAGE_KEY = 'goldTradeData';
-        const DATA_VERSION = 1;  // 数据版本号，便于未来升级
+        const GOLD_PRICE_HISTORY_KEY = 'goldPriceHistory';
+        const GOLD_PRICE_DAILY_KEY = 'goldPriceDaily';
+        const DATA_VERSION = 1;
 
-        // 检测 localStorage 是否可用
         function isLocalStorageAvailable() {
             try {
                 const testKey = '__test__';
@@ -703,7 +987,6 @@
             }
         }
 
-        // 获取默认数据结构
         function getDefaultData() {
             return {
                 version: DATA_VERSION,
@@ -712,44 +995,36 @@
             };
         }
 
-        // 获取所有数据
         function getData() {
             if (!isLocalStorageAvailable()) {
-                console.warn('localStorage 不可用，数据将无法持久化保存');
+                console.warn('localStorage 不可用');
                 return getDefaultData();
             }
-
             try {
                 const data = localStorage.getItem(STORAGE_KEY);
                 if (data) {
                     const parsed = JSON.parse(data);
-                    // 检查数据版本，如果版本不匹配则使用默认数据
                     if (parsed.version !== DATA_VERSION) {
-                        console.warn('数据版本不匹配，使用默认数据结构');
+                        console.warn('数据版本不匹配');
                         return getDefaultData();
                     }
-                    // 确保必要字段存在
                     if (!parsed.buyRecords) parsed.buyRecords = [];
                     if (!parsed.sellRecords) parsed.sellRecords = [];
                     return parsed;
                 }
             } catch (e) {
-                console.error('数据解析失败，使用默认数据:', e);
-                // 数据损坏时清除旧数据
+                console.error('数据解析失败:', e);
                 localStorage.removeItem(STORAGE_KEY);
             }
             return getDefaultData();
         }
 
-        // 保存所有数据
         function saveData(data) {
             if (!isLocalStorageAvailable()) {
-                console.warn('localStorage 不可用，数据无法保存');
+                console.warn('localStorage 不可用');
                 return false;
             }
-
             try {
-                // 确保数据版本号存在
                 data.version = DATA_VERSION;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
                 return true;
@@ -763,12 +1038,10 @@
             }
         }
 
-        // 生成唯一ID
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
-        // 格式化时间
         function formatTime(date) {
             const d = new Date(date);
             const year = d.getFullYear();
@@ -779,12 +1052,23 @@
             return `${year}-${month}-${day} ${hour}:${minute}`;
         }
 
-        // 添加买入记录
+        function formatTimeShort(date) {
+            const d = new Date(date);
+            return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function formatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function addBuyRecord(price, weight, feeRate) {
             const data = getData();
             const amount = price * weight;
             const fee = amount * feeRate / 100;
-
             const record = {
                 id: generateId(),
                 timestamp: new Date().toISOString(),
@@ -795,20 +1079,17 @@
                 fee: fee,
                 remainingWeight: parseFloat(weight)
             };
-
             data.buyRecords.push(record);
             saveData(data);
             return record;
         }
 
-        // 删除买入记录
         function deleteBuyRecord(id) {
             const data = getData();
             data.buyRecords = data.buyRecords.filter(r => r.id !== id);
             saveData(data);
         }
 
-        // 清空所有买入记录
         function clearAllBuyRecords() {
             const data = getData();
             data.buyRecords = [];
@@ -816,17 +1097,12 @@
             saveData(data);
         }
 
-        // 添加卖出记录并扣减持仓
         function addSellRecord(price, weight, feeRate) {
             const data = getData();
             const amount = price * weight;
             const fee = amount * feeRate / 100;
-
-            // 获取卖出前的加权平均成本价格
             const statsBeforeSell = getPortfolioStats();
             const avgCostPrice = statsBeforeSell.avgCost;
-
-            // 按FIFO扣减买入记录的剩余克数
             let remainingSell = parseFloat(weight);
             for (let record of data.buyRecords) {
                 if (remainingSell <= 0) break;
@@ -836,7 +1112,6 @@
                     remainingSell -= deduct;
                 }
             }
-
             const sellRecord = {
                 id: generateId(),
                 timestamp: new Date().toISOString(),
@@ -845,34 +1120,28 @@
                 amount: amount,
                 feeRate: parseFloat(feeRate),
                 fee: fee,
-                costPrice: avgCostPrice  // 记录卖出时的加权平均成本价格
+                costPrice: avgCostPrice
             };
-
             data.sellRecords.push(sellRecord);
             saveData(data);
             return sellRecord;
         }
 
-        // 获取持仓统计
         function getPortfolioStats() {
             const data = getData();
             let totalWeight = 0;
             let totalAmount = 0;
             let totalFee = 0;
-
             data.buyRecords.forEach(record => {
                 if (record.remainingWeight > 0) {
                     totalWeight += record.remainingWeight;
-                    // 按剩余比例计算对应的投入金额
                     const ratio = record.remainingWeight / record.weight;
                     totalAmount += record.amount * ratio;
                     totalFee += record.fee * ratio;
                 }
             });
-
             const totalInvestment = totalAmount + totalFee;
             const avgCost = totalWeight > 0 ? totalInvestment / totalWeight : 0;
-
             return {
                 totalWeight: totalWeight,
                 totalAmount: totalAmount,
@@ -882,11 +1151,370 @@
             };
         }
 
-        // 计算保本卖出价
         function calculateBreakEvenPrice(avgCost, sellFeeRate) {
             if (avgCost <= 0) return 0;
             return avgCost / (1 - sellFeeRate / 100);
         }
+
+        // ==================== 实时金价模块 ====================
+        const GOLD_API_URL = 'https://tmini.net/api/gold-price';
+        let currentGoldData = null;
+        let goldPriceChart = null;
+        let currentChartMode = 'hourly';
+
+        // 获取金价历史数据
+        function getGoldPriceHistory() {
+            if (!isLocalStorageAvailable()) return [];
+            try {
+                const data = localStorage.getItem(GOLD_PRICE_HISTORY_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveGoldPriceHistory(history) {
+            if (!isLocalStorageAvailable()) return;
+            try {
+                // 只保留最近7天的数据
+                const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                const filtered = history.filter(h => h.timestamp > sevenDaysAgo);
+                localStorage.setItem(GOLD_PRICE_HISTORY_KEY, JSON.stringify(filtered));
+            } catch (e) {
+                console.error('保存金价历史失败:', e);
+            }
+        }
+
+        function getGoldPriceDaily() {
+            if (!isLocalStorageAvailable()) return [];
+            try {
+                const data = localStorage.getItem(GOLD_PRICE_DAILY_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveGoldPriceDaily(daily) {
+            if (!isLocalStorageAvailable()) return;
+            try {
+                // 只保留最近90天
+                const cutoff = daily.length > 90 ? daily.slice(-90) : daily;
+                localStorage.setItem(GOLD_PRICE_DAILY_KEY, JSON.stringify(cutoff));
+            } catch (e) {
+                console.error('保存每日金价失败:', e);
+            }
+        }
+
+        // 获取实时金价
+        async function fetchGoldPrice() {
+            const statusEl = document.getElementById('goldPriceStatus');
+            statusEl.textContent = '更新中...';
+            statusEl.className = 'gold-price-status';
+
+            try {
+                const response = await fetch(GOLD_API_URL);
+                if (!response.ok) throw new Error('API请求失败');
+                const data = await response.json();
+
+                // 使用"今日金价"数据
+                const goldMetal = data.metals && data.metals.length > 0 ? data.metals[0] : null;
+                if (!goldMetal) throw new Error('未获取到金价数据');
+
+                currentGoldData = {
+                    sellPrice: parseFloat(goldMetal.sell_price),
+                    todayPrice: parseFloat(goldMetal.today_price),
+                    highPrice: parseFloat(goldMetal.high_price),
+                    lowPrice: parseFloat(goldMetal.low_price),
+                    updated: goldMetal.updated,
+                    timestamp: Date.now()
+                };
+
+                updateGoldPriceUI();
+                recordPriceSnapshot();
+                updateChart();
+
+                statusEl.textContent = '实时';
+                statusEl.className = 'gold-price-status';
+            } catch (e) {
+                console.error('获取金价失败:', e);
+                statusEl.textContent = '获取失败';
+                statusEl.className = 'gold-price-status error';
+
+                // 如果有缓存数据，使用缓存
+                if (currentGoldData) {
+                    updateGoldPriceUI();
+                }
+            }
+        }
+
+        function updateGoldPriceUI() {
+            if (!currentGoldData) return;
+
+            const prevPrice = document.getElementById('goldPriceCurrent').dataset.price;
+            const currentPrice = currentGoldData.todayPrice;
+
+            document.getElementById('goldPriceCurrent').textContent = currentPrice.toFixed(2);
+            document.getElementById('goldPriceCurrent').dataset.price = currentPrice;
+            document.getElementById('goldPriceSell').textContent = currentGoldData.sellPrice.toFixed(2);
+            document.getElementById('goldPriceHigh').textContent = currentGoldData.highPrice.toFixed(2);
+            document.getElementById('goldPriceLow').textContent = currentGoldData.lowPrice.toFixed(2);
+            document.getElementById('goldPriceOpen').textContent = currentGoldData.todayPrice.toFixed(2);
+            document.getElementById('goldPriceUpdate').textContent = '更新于 ' + (currentGoldData.updated || formatTime(new Date()));
+
+            // 更新涨跌指示
+            const changeEl = document.getElementById('goldPriceChange');
+            if (prevPrice && parseFloat(prevPrice) > 0) {
+                const diff = currentPrice - parseFloat(prevPrice);
+                if (Math.abs(diff) > 0.01) {
+                    changeEl.style.display = 'inline';
+                    changeEl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2);
+                    changeEl.className = 'gold-price-change ' + (diff >= 0 ? 'up' : 'down');
+                } else {
+                    changeEl.style.display = 'none';
+                }
+            }
+
+            // 更新自动获取按钮提示
+            document.getElementById('autoPriceHint').textContent = currentGoldData.sellPrice.toFixed(2);
+        }
+
+        // 记录价格快照
+        function recordPriceSnapshot() {
+            if (!currentGoldData) return;
+
+            const history = getGoldPriceHistory();
+            const now = new Date();
+            const today = formatDate(now);
+
+            // 每小时记录一次（或首次记录）
+            const lastRecord = history.length > 0 ? history[history.length - 1] : null;
+            const shouldRecord = !lastRecord ||
+                (Date.now() - lastRecord.timestamp > 55 * 60 * 1000); // 约55分钟记录一次
+
+            if (shouldRecord) {
+                history.push({
+                    timestamp: currentGoldData.timestamp,
+                    price: currentGoldData.todayPrice,
+                    high: currentGoldData.highPrice,
+                    low: currentGoldData.lowPrice,
+                    sell: currentGoldData.sellPrice
+                });
+                saveGoldPriceHistory(history);
+
+                // 更新每日数据
+                updateDailyRecord(today);
+            }
+        }
+
+        function updateDailyRecord(today) {
+            if (!currentGoldData) return;
+
+            const daily = getGoldPriceDaily();
+            const todayRecord = daily.find(d => d.date === today);
+
+            if (todayRecord) {
+                todayRecord.high = Math.max(todayRecord.high, currentGoldData.highPrice);
+                todayRecord.low = Math.min(todayRecord.low, currentGoldData.lowPrice);
+                todayRecord.close = currentGoldData.todayPrice;
+            } else {
+                daily.push({
+                    date: today,
+                    high: currentGoldData.highPrice,
+                    low: currentGoldData.lowPrice,
+                    close: currentGoldData.todayPrice,
+                    open: currentGoldData.todayPrice
+                });
+            }
+
+            saveGoldPriceDaily(daily);
+        }
+
+        // 卖出时自动获取金价
+        async function fetchGoldPriceForSell() {
+            const btn = document.getElementById('btnAutoPrice');
+            btn.classList.add('loading');
+            btn.textContent = '获取中...';
+
+            try {
+                const response = await fetch(GOLD_API_URL);
+                if (!response.ok) throw new Error('API请求失败');
+                const data = await response.json();
+                const goldMetal = data.metals && data.metals.length > 0 ? data.metals[0] : null;
+
+                if (goldMetal) {
+                    const sellPrice = parseFloat(goldMetal.sell_price);
+                    document.getElementById('sellPriceInput').value = sellPrice.toFixed(2);
+                    updateSellPreview();
+
+                    // 同时更新全局金价数据
+                    currentGoldData = {
+                        sellPrice: sellPrice,
+                        todayPrice: parseFloat(goldMetal.today_price),
+                        highPrice: parseFloat(goldMetal.high_price),
+                        lowPrice: parseFloat(goldMetal.low_price),
+                        updated: goldMetal.updated,
+                        timestamp: Date.now()
+                    };
+                    updateGoldPriceUI();
+                    recordPriceSnapshot();
+                    updateChart();
+                }
+            } catch (e) {
+                console.error('获取金价失败:', e);
+                // 使用缓存数据
+                if (currentGoldData) {
+                    document.getElementById('sellPriceInput').value = currentGoldData.sellPrice.toFixed(2);
+                    updateSellPreview();
+                } else {
+                    alert('获取实时金价失败，请手动输入');
+                }
+            } finally {
+                btn.classList.remove('loading');
+                btn.innerHTML = '获取实时价<span class="price-hint">' +
+                    (currentGoldData ? currentGoldData.sellPrice.toFixed(2) : '--') + '</span>';
+            }
+        }
+
+        // ==================== 图表模块 ====================
+        function initChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            goldPriceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '金价 (元/克)',
+                        data: [],
+                        borderColor: '#ffd700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#ffd700'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#ffd700',
+                            borderColor: '#ffd700',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(2) + ' 元/克';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,
+                                color: '#7f8c8d'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#7f8c8d',
+                                callback: function(value) {
+                                    return value.toFixed(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (!goldPriceChart) return;
+
+            if (currentChartMode === 'hourly') {
+                updateHourlyChart();
+            } else {
+                updateDailyChart();
+            }
+        }
+
+        function updateHourlyChart() {
+            const history = getGoldPriceHistory();
+            const today = formatDate(new Date());
+
+            // 筛选今日数据
+            const todayData = history.filter(h => formatDate(new Date(h.timestamp)) === today);
+
+            // 如果当前有实时数据，追加当前点
+            const chartData = [...todayData];
+            if (currentGoldData && (chartData.length === 0 ||
+                    currentGoldData.timestamp - chartData[chartData.length - 1].timestamp > 5 * 60 * 1000)) {
+                chartData.push({
+                    timestamp: currentGoldData.timestamp,
+                    price: currentGoldData.todayPrice,
+                    high: currentGoldData.highPrice,
+                    low: currentGoldData.lowPrice
+                });
+            }
+
+            const labels = chartData.map(d => formatTimeShort(new Date(d.timestamp)));
+            const prices = chartData.map(d => d.price);
+
+            goldPriceChart.data.labels = labels;
+            goldPriceChart.data.datasets[0].data = prices;
+            goldPriceChart.data.datasets[0].label = '金价 (元/克)';
+            goldPriceChart.data.datasets[0].borderColor = '#ffd700';
+            goldPriceChart.data.datasets[0].backgroundColor = 'rgba(255, 215, 0, 0.1)';
+            goldPriceChart.data.datasets[0].pointBackgroundColor = '#ffd700';
+            goldPriceChart.options.scales.x.ticks.maxTicksLimit = 8;
+
+            goldPriceChart.update();
+        }
+
+        function updateDailyChart() {
+            const daily = getGoldPriceDaily();
+
+            const labels = daily.map(d => d.date.slice(5)); // MM-DD 格式
+            const prices = daily.map(d => d.close);
+
+            goldPriceChart.data.labels = labels;
+            goldPriceChart.data.datasets[0].data = prices;
+            goldPriceChart.data.datasets[0].label = '收盘价 (元/克)';
+            goldPriceChart.data.datasets[0].borderColor = '#3498db';
+            goldPriceChart.data.datasets[0].backgroundColor = 'rgba(52, 152, 219, 0.1)';
+            goldPriceChart.data.datasets[0].pointBackgroundColor = '#3498db';
+            goldPriceChart.options.scales.x.ticks.maxTicksLimit = 10;
+
+            goldPriceChart.update();
+        }
+
+        // 图表切换
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentChartMode = this.dataset.chart;
+                updateChart();
+            });
+        });
 
         // ==================== 买入功能 ====================
         const buyPriceInput = document.getElementById('buyPriceInput');
@@ -897,10 +1525,8 @@
             const price = parseFloat(buyPriceInput.value) || 0;
             const weight = parseFloat(buyWeightInput.value) || 0;
             const feeRate = parseFloat(buyFeeRateInput.value) || 0;
-
             const amount = price * weight;
             const fee = amount * feeRate / 100;
-
             document.getElementById('previewBuyAmount').textContent = amount.toFixed(2) + ' 元';
             document.getElementById('previewBuyFee').textContent = fee.toFixed(2) + ' 元';
         }
@@ -913,22 +1539,15 @@
             const price = parseFloat(buyPriceInput.value) || 0;
             const weight = parseFloat(buyWeightInput.value) || 0;
             const feeRate = parseFloat(buyFeeRateInput.value) || 0;
-
             if (price <= 0 || weight <= 0) {
                 alert('请输入有效的买入价格和克数！');
                 return;
             }
-
             addBuyRecord(price, weight, feeRate);
-
-            // 清空表单
             buyPriceInput.value = '';
             buyWeightInput.value = '';
             updateBuyPreview();
-
-            // 刷新显示
             refreshPortfolio();
-
             alert('买入成功！');
         }
 
@@ -936,17 +1555,12 @@
             const data = getData();
             const stats = getPortfolioStats();
             const sellFeeRate = parseFloat(document.getElementById('sellFeeRateInput').value) || 0.4;
-
-            // 更新统计卡片
             document.getElementById('statTotalWeight').textContent = stats.totalWeight.toFixed(4) + ' 克';
             document.getElementById('statTotalInvestment').textContent = stats.totalInvestment.toFixed(2) + ' 元';
             document.getElementById('statAvgCost').textContent = stats.avgCost.toFixed(2) + ' 元/克';
-
-            // 更新保本价
             const breakEvenPrice = calculateBreakEvenPrice(stats.avgCost, sellFeeRate);
             document.getElementById('breakEvenPrice').textContent = breakEvenPrice.toFixed(2);
 
-            // 更新买入记录表格
             const tbody = document.getElementById('buyRecordsBody');
             const tfoot = document.getElementById('buyRecordsFoot');
             const emptyTip = document.getElementById('emptyTip');
@@ -955,22 +1569,19 @@
                 tbody.innerHTML = '';
                 tfoot.innerHTML = '';
                 emptyTip.style.display = 'block';
-                document.querySelector('.table-container').style.display = 'none';
+                document.querySelector('#buyRecordsTable').parentElement.style.display = 'none';
             } else {
                 emptyTip.style.display = 'none';
-                document.querySelector('.table-container').style.display = 'block';
-
-                let totalWeight = 0;
-                let totalAmount = 0;
-                let totalFee = 0;
-                let totalRemaining = 0;
-
+                document.querySelector('#buyRecordsTable').parentElement.style.display = 'block';
+                let totalWeight = 0,
+                    totalAmount = 0,
+                    totalFee = 0,
+                    totalRemaining = 0;
                 tbody.innerHTML = data.buyRecords.map(record => {
                     totalWeight += record.weight;
                     totalAmount += record.amount;
                     totalFee += record.fee;
                     totalRemaining += record.remainingWeight;
-
                     return `
                         <tr>
                             <td>${formatTime(record.timestamp)}</td>
@@ -983,7 +1594,6 @@
                         </tr>
                     `;
                 }).join('');
-
                 tfoot.innerHTML = `
                     <tr>
                         <td><b>合计</b></td>
@@ -996,6 +1606,9 @@
                     </tr>
                 `;
             }
+
+            // 刷新收益记录
+            filterProfitRecords();
         }
 
         function handleDeleteBuy(id) {
@@ -1038,9 +1651,7 @@
             const price = parseFloat(sellPriceInput.value) || 0;
             const quantity = parseFloat(sellQuantityInput.value) || 0;
             const feeRate = parseFloat(sellFeeRateInput.value) || 0;
-
             let sellWeight, sellAmount;
-
             if (sellType === 'weight') {
                 sellWeight = quantity;
                 sellAmount = price * sellWeight;
@@ -1048,16 +1659,11 @@
                 sellAmount = quantity;
                 sellWeight = price > 0 ? sellAmount / price : 0;
             }
-
             const sellFee = sellAmount * feeRate / 100;
-
-            // 计算净收益（卖出金额 - 手续费 - 对应成本）
             const costBasis = sellWeight * stats.avgCost;
             const netProfit = sellAmount - sellFee - costBasis;
-
             document.getElementById('previewSellAmount').textContent = sellAmount.toFixed(2) + ' 元';
             document.getElementById('previewSellFee').textContent = sellFee.toFixed(2) + ' 元';
-
             const netProfitEl = document.getElementById('previewNetProfit');
             netProfitEl.textContent = (netProfit >= 0 ? '+' : '') + netProfit.toFixed(2) + ' 元';
             netProfitEl.className = 'preview-value ' + (netProfit >= 0 ? 'profit-text' : 'loss-text');
@@ -1073,34 +1679,25 @@
             const price = parseFloat(sellPriceInput.value) || 0;
             const quantity = parseFloat(sellQuantityInput.value) || 0;
             const feeRate = parseFloat(sellFeeRateInput.value) || 0;
-
             if (price <= 0 || quantity <= 0) {
                 alert('请输入有效的卖出价格和数量！');
                 return;
             }
-
             let sellWeight;
             if (sellType === 'weight') {
                 sellWeight = quantity;
             } else {
                 sellWeight = price > 0 ? quantity / price : 0;
             }
-
             if (sellWeight > stats.totalWeight) {
                 alert(`卖出数量超出持仓！当前持仓：${stats.totalWeight.toFixed(4)} 克`);
                 return;
             }
-
             addSellRecord(price, sellWeight, feeRate);
-
-            // 清空表单
             sellPriceInput.value = '';
             sellQuantityInput.value = '';
             updateSellPreview();
-
-            // 刷新显示
             refreshPortfolio();
-
             alert('卖出成功！');
         }
 
@@ -1110,26 +1707,19 @@
         let profitCurrentPage = 1;
         const profitPageSize = 5;
         let profitFilteredRecords = [];
-        let profitSummaryCache = null; // 缓存汇总数据
-        let profitRenderTimer = null; // 渲染防抖计时器
+        let profitSummaryCache = null;
+        let profitRenderTimer = null;
 
-        // 计算卖出记录的收益数据
         function calculateSellProfitData() {
             const data = getData();
             const sellRecords = data.sellRecords || [];
-            
-            // 为每条卖出记录计算收益金额、收益率
             return sellRecords.map(record => {
-                // 使用卖出时记录的加权平均成本价格
                 const costPrice = record.costPrice || 0;
-                
-                // 计算收益
                 const sellAmount = record.amount;
                 const sellFee = record.fee;
                 const costBasis = record.weight * costPrice;
                 const profit = sellAmount - sellFee - costBasis;
                 const rate = costBasis > 0 ? (profit / costBasis) * 100 : 0;
-                
                 return {
                     ...record,
                     costPrice: costPrice,
@@ -1139,11 +1729,9 @@
             });
         }
 
-        // 获取时间范围
         function getProfitTimeRange(filterType) {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
             switch (filterType) {
                 case 'today':
                     return { start: today, end: now };
@@ -1164,17 +1752,9 @@
             }
         }
 
-        // 筛选收益记录（带防抖）
         function filterProfitRecords() {
-            // 清除之前的渲染计时器
-            if (profitRenderTimer) {
-                clearTimeout(profitRenderTimer);
-            }
-            
-            // 显示加载状态
+            if (profitRenderTimer) clearTimeout(profitRenderTimer);
             showProfitLoading();
-            
-            // 使用防抖延迟渲染（100ms）
             profitRenderTimer = setTimeout(() => {
                 requestAnimationFrame(() => {
                     performFilterAndRender();
@@ -1182,7 +1762,6 @@
             }, 100);
         }
 
-        // 显示加载状态
         function showProfitLoading() {
             const tbody = document.getElementById('profitRecordsBody');
             const tfoot = document.getElementById('profitRecordsFoot');
@@ -1190,11 +1769,9 @@
             tfoot.innerHTML = '';
         }
 
-        // 执行筛选和渲染
         function performFilterAndRender() {
             const allRecords = calculateSellProfitData();
             const range = getProfitTimeRange(profitCurrentFilter);
-            
             if (range) {
                 profitFilteredRecords = allRecords.filter(record => {
                     const recordDate = new Date(record.timestamp);
@@ -1203,39 +1780,26 @@
             } else {
                 profitFilteredRecords = [...allRecords];
             }
-            
-            // 排序
             sortProfitRecords();
-            
-            // 重置到第一页
             profitCurrentPage = 1;
-            
-            // 计算并缓存汇总数据
             profitSummaryCache = calculateProfitSummary();
-            
-            // 更新显示
             renderProfitRecords();
             renderProfitSummary();
         }
 
-        // 计算汇总数据（缓存）
         function calculateProfitSummary() {
             if (profitFilteredRecords.length === 0) {
                 return { count: 0, totalAmount: 0, totalProfit: 0, avgRate: 0 };
             }
-            
             let totalAmount = 0;
             let totalProfit = 0;
             let totalRate = 0;
-            
-            // 使用 for 循环比 reduce 更快
             for (let i = 0; i < profitFilteredRecords.length; i++) {
                 const record = profitFilteredRecords[i];
                 totalAmount += record.amount;
                 totalProfit += record.profit;
                 totalRate += record.rate;
             }
-            
             return {
                 count: profitFilteredRecords.length,
                 totalAmount: totalAmount,
@@ -1244,13 +1808,10 @@
             };
         }
 
-        // 排序收益记录
         function sortProfitRecords() {
             const [field, direction] = profitCurrentSort.split('-');
-            
             profitFilteredRecords.sort((a, b) => {
                 let valueA, valueB;
-                
                 switch (field) {
                     case 'time':
                         valueA = new Date(a.timestamp).getTime();
@@ -1267,18 +1828,16 @@
                     default:
                         return 0;
                 }
-                
                 return direction === 'desc' ? valueB - valueA : valueA - valueB;
             });
         }
 
-        // 渲染收益记录表格（使用 DocumentFragment 优化）
         function renderProfitRecords() {
             const tbody = document.getElementById('profitRecordsBody');
             const tfoot = document.getElementById('profitRecordsFoot');
             const emptyTip = document.getElementById('profitEmptyTip');
             const tableContainer = document.getElementById('profitTableContainer');
-            
+
             if (profitFilteredRecords.length === 0) {
                 tbody.innerHTML = '';
                 tfoot.innerHTML = '';
@@ -1287,37 +1846,33 @@
                 document.getElementById('profitPagination').innerHTML = '';
                 return;
             }
-            
+
             emptyTip.style.display = 'none';
             tableContainer.style.display = 'block';
-            
-            // 分页
+
             const totalPages = Math.ceil(profitFilteredRecords.length / profitPageSize);
             const startIndex = (profitCurrentPage - 1) * profitPageSize;
             const endIndex = Math.min(startIndex + profitPageSize, profitFilteredRecords.length);
-            
-            // 使用 DocumentFragment 批量创建 DOM 节点
+
             const fragment = document.createDocumentFragment();
-            
-            let totalWeight = 0;
-            let totalAmount = 0;
-            let totalFee = 0;
-            let totalProfit = 0;
-            
+            let totalWeight = 0,
+                totalAmount = 0,
+                totalFee = 0,
+                totalProfit = 0;
+
             for (let i = startIndex; i < endIndex; i++) {
                 const record = profitFilteredRecords[i];
                 totalWeight += record.weight;
                 totalAmount += record.amount;
                 totalFee += record.fee;
                 totalProfit += record.profit;
-                
+
                 const tr = document.createElement('tr');
-                
                 const profitClass = record.profit >= 0 ? 'profit-amount' : 'loss-amount';
                 const rateClass = record.rate >= 0 ? 'profit-rate' : 'loss-rate';
                 const profitSign = record.profit >= 0 ? '+' : '';
                 const rateSign = record.rate >= 0 ? '+' : '';
-                
+
                 tr.innerHTML = `
                     <td>${formatTime(record.timestamp)}</td>
                     <td>${record.price.toFixed(2)}</td>
@@ -1328,21 +1883,18 @@
                     <td class="${profitClass}">${profitSign}${record.profit.toFixed(2)}</td>
                     <td><span class="${rateClass}">${rateSign}${record.rate.toFixed(2)}%</span></td>
                 `;
-                
                 fragment.appendChild(tr);
             }
-            
-            // 批量插入 DOM
+
             tbody.innerHTML = '';
             tbody.appendChild(fragment);
-            
-            // 渲染汇总行
+
             const avgRate = totalAmount > 0 ? (totalProfit / (totalAmount - totalFee)) * 100 : 0;
             const avgRateClass = avgRate >= 0 ? 'profit-rate' : 'loss-rate';
             const avgRateSign = avgRate >= 0 ? '+' : '';
             const totalProfitClass = totalProfit >= 0 ? 'profit-amount' : 'loss-amount';
             const totalProfitSign = totalProfit >= 0 ? '+' : '';
-            
+
             tfoot.innerHTML = `
                 <tr>
                     <td><b>合计</b></td>
@@ -1355,29 +1907,24 @@
                     <td><span class="${avgRateClass}"><b>${avgRateSign}${avgRate.toFixed(2)}%</b></span></td>
                 </tr>
             `;
-            
-            // 渲染分页
+
             renderProfitPagination(totalPages);
         }
 
-        // 渲染分页（优化大数据量下的页码显示）
         function renderProfitPagination(totalPages) {
             const pagination = document.getElementById('profitPagination');
-            
             if (totalPages <= 1) {
                 pagination.innerHTML = `<span class="page-info">共 ${profitFilteredRecords.length} 条记录</span>`;
                 return;
             }
-            
-            // 使用 DocumentFragment 优化
+
             const fragment = document.createDocumentFragment();
             const container = document.createElement('div');
             container.style.display = 'flex';
             container.style.justifyContent = 'center';
             container.style.gap = '8px';
             container.style.alignItems = 'center';
-            
-            // 上一页按钮
+
             const prevBtn = document.createElement('button');
             prevBtn.className = `page-btn ${profitCurrentPage === 1 ? 'disabled' : ''}`;
             prevBtn.textContent = '上一页';
@@ -1386,23 +1933,20 @@
                 prevBtn.onclick = () => goToProfitPage(profitCurrentPage - 1);
             }
             container.appendChild(prevBtn);
-            
-            // 页码按钮（大数据量时只显示部分页码）
+
             const maxVisiblePages = 5;
             let startPage = Math.max(1, profitCurrentPage - Math.floor(maxVisiblePages / 2));
             let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            
             if (endPage - startPage < maxVisiblePages - 1) {
                 startPage = Math.max(1, endPage - maxVisiblePages + 1);
             }
-            
+
             if (startPage > 1) {
                 const firstBtn = document.createElement('button');
                 firstBtn.className = 'page-btn';
                 firstBtn.textContent = '1';
                 firstBtn.onclick = () => goToProfitPage(1);
                 container.appendChild(firstBtn);
-                
                 if (startPage > 2) {
                     const ellipsis = document.createElement('span');
                     ellipsis.textContent = '...';
@@ -1410,7 +1954,7 @@
                     container.appendChild(ellipsis);
                 }
             }
-            
+
             for (let i = startPage; i <= endPage; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.className = `page-btn ${i === profitCurrentPage ? 'active' : ''}`;
@@ -1420,7 +1964,7 @@
                 }
                 container.appendChild(pageBtn);
             }
-            
+
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                     const ellipsis = document.createElement('span');
@@ -1428,21 +1972,18 @@
                     ellipsis.style.color = '#7f8c8d';
                     container.appendChild(ellipsis);
                 }
-                
                 const lastBtn = document.createElement('button');
                 lastBtn.className = 'page-btn';
                 lastBtn.textContent = totalPages;
                 lastBtn.onclick = () => goToProfitPage(totalPages);
                 container.appendChild(lastBtn);
             }
-            
-            // 记录数
+
             const pageInfo = document.createElement('span');
             pageInfo.className = 'page-info';
             pageInfo.textContent = `共 ${profitFilteredRecords.length} 条记录`;
             container.appendChild(pageInfo);
-            
-            // 下一页按钮
+
             const nextBtn = document.createElement('button');
             nextBtn.className = `page-btn ${profitCurrentPage === totalPages ? 'disabled' : ''}`;
             nextBtn.textContent = '下一页';
@@ -1451,87 +1992,77 @@
                 nextBtn.onclick = () => goToProfitPage(profitCurrentPage + 1);
             }
             container.appendChild(nextBtn);
-            
+
             fragment.appendChild(container);
             pagination.innerHTML = '';
             pagination.appendChild(fragment);
         }
 
-        // 跳转页面（带防抖）
         function goToProfitPage(page) {
             profitCurrentPage = page;
-            
-            // 使用 requestAnimationFrame 优化渲染
             requestAnimationFrame(() => {
                 renderProfitRecords();
             });
         }
 
-        // 渲染汇总卡片（使用缓存）
         function renderProfitSummary() {
             const summary = profitSummaryCache || calculateProfitSummary();
-            
             document.getElementById('profitSummaryCount').textContent = summary.count + ' 次';
             document.getElementById('profitSummaryAmount').textContent = summary.totalAmount.toFixed(2) + ' 元';
-            
+
             const profitEl = document.getElementById('profitSummaryProfit');
             profitEl.textContent = (summary.totalProfit >= 0 ? '+' : '') + summary.totalProfit.toFixed(2) + ' 元';
             profitEl.className = 'profit-summary-value ' + (summary.totalProfit >= 0 ? 'profit' : 'loss');
-            
+
             const rateEl = document.getElementById('profitSummaryRate');
             rateEl.textContent = (summary.avgRate >= 0 ? '+' : '') + summary.avgRate.toFixed(2) + '%';
             rateEl.className = 'profit-summary-value ' + (summary.avgRate >= 0 ? 'profit' : 'loss');
         }
 
-        // 事件绑定 - 筛选按钮
+        // 筛选按钮事件
         document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
             btn.addEventListener('click', function() {
-                // 移除所有按钮的active状态
                 document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
                 document.getElementById('customFilterBtn').classList.remove('active');
-                
-                // 添加当前按钮的active状态
                 this.classList.add('active');
-                
                 profitCurrentFilter = this.dataset.filter;
                 filterProfitRecords();
             });
         });
 
-        // 自定义筛选按钮
         document.getElementById('customFilterBtn').addEventListener('click', function() {
             const startDate = document.getElementById('startDateInput').value;
             const endDate = document.getElementById('endDateInput').value;
-            
             if (!startDate || !endDate) {
                 alert('请选择开始日期和结束日期！');
                 return;
             }
-            
             if (new Date(startDate) > new Date(endDate)) {
                 alert('开始日期不能大于结束日期！');
                 return;
             }
-            
-            // 移除其他按钮的active状态
             document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
             profitCurrentFilter = 'custom';
             filterProfitRecords();
         });
 
-        // 排序选择
         document.getElementById('sortSelect').addEventListener('change', function() {
             profitCurrentSort = this.value;
             filterProfitRecords();
         });
 
         // ==================== 初始化 ====================
-        // 页面加载时刷新持仓显示和卖出收益记录
         document.addEventListener('DOMContentLoaded', function() {
             refreshPortfolio();
             filterProfitRecords();
+            initChart();
+
+            // 首次获取金价
+            fetchGoldPrice();
+
+            // 每小时刷新一次金价
+            setInterval(fetchGoldPrice, 60 * 60 * 1000);
         });
     </script>
 </body>
